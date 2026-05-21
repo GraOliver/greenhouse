@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Nsele - Détails de la Serre{% endblock %}
+{% block header_title %}Serre connectée - Détails{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<style>
+    /* Disposition en grille pour les détails et compartiments */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        max-width: 1200px;
+        margin: 40px auto;
+    }
+    @media (max-width: 900px) {
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Lignes d'information */
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+    }
+    .info-row strong {
+        color: #475569;
+    }
+
+    /* Rangée d'actions */
+    .action-row {
+        display: flex;
+        gap: 16px;
+        margin-top: 32px;
+    }
+
+    /* Bouton de suppression (danger) */
+    .btn-danger {
+        background: #b91c1c;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .btn-danger:hover {
+        background: #991b1b;
+        transform: translateY(-1px);
+    }
+
+    /* Élément de compartiment */
+    .comp-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px;
+        background: rgba(241, 245, 249, 0.6);
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border: 1px solid rgba(226, 232, 240, 0.6);
+    }
+
+    /* Bouton de suppression de compartiment */
+    .btn-delete-comp {
+        background: none;
+        border: none;
+        color: #ef4444;
+        cursor: pointer;
+        font-size: 0.95rem;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+    .btn-delete-comp:hover {
+        background: rgba(239, 68, 68, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="padding: 0 24px;">
+    <div class="detail-grid">
+        
+        <!-- GAUCHE : DÉTAILS DE LA SERRE -->
+        <div class="card" style="margin: 0;">
+            <h2 id="gh-detail-title" style="margin-top: 0; margin-bottom: 6px;">Détails de la Serre</h2>
+            <p class="subtle" style="margin-bottom: 24px;">Informations de configuration et seuils associés.</p>
+
+            <!-- Informations générales -->
+            <div class="info-row">
+                <span>Identifiant</span>
+                <strong id="info-id">{{ gh_id }}</strong>
+            </div>
+            <div class="info-row">
+                <span>Nom descriptif</span>
+                <strong id="info-name">--</strong>
+            </div>
+            <div class="info-row">
+                <span>Culture assignée</span>
+                <strong id="info-culture">--</strong>
+            </div>
+            <div class="info-row">
+                <span>Statut de la serre</span>
+                <strong id="info-status" style="color: #059669;">--</strong>
+            </div>
+
+            <!-- Seuils de déclenchement -->
+            <h3 style="margin-top: 30px; margin-bottom: 12px; color: #0f172a;">Seuils de déclenchement associés</h3>
+            <div class="info-row">
+                <span>Température de l'Air (Min - Max)</span>
+                <strong id="threshold-temp-air">--</strong>
+            </div>
+            <div class="info-row">
+                <span>Humidité du Sol (Min - Max)</span>
+                <strong id="threshold-hum-sol">--</strong>
+            </div>
+            <div class="info-row">
+                <span>Humidité de l'Air (Min - Max)</span>
+                <strong id="threshold-hum-air">--</strong>
+            </div>
+
+            <!-- Actions -->
+            <div class="action-row">
+                <button id="delete-gh-btn" class="btn-danger" onclick="deleteGreenhouse()">🗑️ Supprimer la Serre</button>
+                <a href="/settings" class="btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Retour</a>
+            </div>
+        </div>
+
+        <!-- DROITE : GESTION DES COMPARTIMENTS -->
+        <div class="card" style="margin: 0;">
+            <h2 style="margin-top: 0; margin-bottom: 6px;">Gestion des Compartiments</h2>
+            <p class="subtle" style="margin-bottom: 24px;">Configurez les compartiments actifs de cette serre.</p>
+
+            <!-- Liste des compartiments -->
+            <div id="compartments-list-container" style="min-height: 150px;">
+                <ul id="compartments-list" style="list-style: none; padding: 0; margin: 0;">
+                    <!-- Rempli dynamiquement par le JS -->
+                </ul>
+            </div>
+
+            <!-- Formulaire pour ajouter un compartiment -->
+            <form id="add-compartment-form" class="form-grid" style="border-top: 1px solid rgba(226, 232, 240, 0.6); padding-top: 20px; margin-top: 20px;" onsubmit="addCompartment(event)">
+                <h4 style="margin: 0; color: #065f46;">Ajouter un Compartiment</h4>
+                <div style="display: flex; gap: 12px; align-items: flex-end;">
+                    <label style="flex-grow: 1; margin: 0;">
+                        Identifiant (ex: C5)
+                        <input type="text" id="comp-id-input" placeholder="C5" required style="width: 100%; margin-top: 4px;">
+                    </label>
+                    <button type="submit" class="btn-primary" style="height: 42px; margin-bottom: 0;">Ajouter</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Toast de notification -->
+    <div id="toast-message" class="card" style="display: none; position: fixed; bottom: 24px; right: 24px; background: #065f46; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 1000; border: none; padding: 16px 24px;">
+        <!-- Rempli dynamiquement -->
+    </div>
+</div>
+
+<!-- Transmission de l'identifiant de la serre au script JavaScript -->
+<script>
+    const CURRENT_GH_ID = "{{ gh_id }}";
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/greenhouse_detail.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,93 @@
+/* Styles spécifiques à la page Histoire */
+
+.filters-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+    margin-bottom: 24px;
+}
+
+.filters-panel label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: #475569;
+    font-weight: 500;
+}
+
+.filters-panel select {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    background: white;
+    min-width: 140px;
+}
+
+.btn-action {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    height: fit-content;
+}
+
+.btn-export {
+    background: #059669;
+    color: white;
+}
+
+.btn-export:hover {
+    background: #047857;
+}
+
+.btn-clear {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-clear:hover {
+    background: #dc2626;
+}
+
+.history-table-container {
+    overflow-x: auto;
+    max-height: 600px;
+    border-radius: 8px;
+    border: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.history-table th,
+.history-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.history-table th {
+    background: rgba(241, 245, 249, 0.8);
+    color: #475569;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.history-table tbody tr:hover {
+    background: rgba(248, 250, 252, 0.6);
+}
+
+.badge-type {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 9999px;
+}

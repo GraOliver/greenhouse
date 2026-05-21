@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Nsele - Historique des Données{% endblock %}
+{% block header_title %}Historique de la Serre{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}">
+<style>
+    /* Panneau de filtres */
+    .filters-panel {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: flex-end;
+        margin-bottom: 24px;
+    }
+
+    .filters-panel label {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 0.9rem;
+        color: #475569;
+        font-weight: 500;
+    }
+
+    .filters-panel select {
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        background: white;
+        min-width: 140px;
+    }
+
+    /* Boutons d'action */
+    .btn-action {
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s ease;
+        height: fit-content;
+    }
+
+    .btn-export {
+        background: #059669;
+        color: white;
+    }
+
+    .btn-export:hover {
+        background: #047857;
+    }
+
+    .btn-clear {
+        background: #ef4444;
+        color: white;
+    }
+
+    .btn-clear:hover {
+        background: #dc2626;
+    }
+
+    /* Conteneur du tableau avec défilement */
+    .history-table-container {
+        overflow-x: auto;
+        max-height: 600px;
+        border-radius: 8px;
+        border: 1px solid rgba(226, 232, 240, 0.6);
+    }
+
+    /* Tableau de l'historique */
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+    }
+
+    .history-table th,
+    .history-table td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+    }
+
+    .history-table th {
+        background: rgba(241, 245, 249, 0.8);
+        color: #475569;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .history-table tbody tr:hover {
+        background: rgba(248, 250, 252, 0.6);
+    }
+
+    /* Badge pour les types d'événements */
+    .badge-type {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+        border-radius: 9999px;
+        font-weight: 600;
+    }
+
+    .badge-sensor {
+        background: #e0f2fe;
+        color: #0369a1;
+    }
+
+    .badge-actuator {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    /* Grille des valeurs de capteurs */
+    .sensor-vals-grid {
+        display: inline-flex;
+        gap: 12px;
+        font-size: 0.85rem;
+        color: #475569;
+    }
+
+    .sensor-val-pill {
+        background: #f1f5f9;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="padding: 0 24px;">
+    <div class="card" style="margin: 40px auto; max-width: 1400px; margin-bottom: 24px;">
+        <h2 style="margin-top: 0; margin-bottom: 6px;">Journal des Événements</h2>
+        <p class="subtle" style="margin-bottom: 20px;">Consultez et filtrez les mesures historiques et l'activité des pompes et ventilateurs.</p>
+
+        <!-- Zone des filtres -->
+        <div class="filters-panel">
+            <label>
+                Serre
+                <select id="filter-serre">
+                    <option value="">Toutes</option>
+                    <option value="S1">Serre S1</option>
+                    <option value="S2">Serre S2</option>
+                    <option value="S3">Serre S3</option>
+                    <option value="S4">Serre S4</option>
+                </select>
+            </label>
+
+            <label>
+                Type d'événement
+                <select id="filter-type">
+                    <option value="">Tous</option>
+                    <option value="capteur">Mesures (Capteurs)</option>
+                    <option value="actionneur">Actionneurs (État)</option>
+                </select>
+            </label>
+
+            <label>
+                Limite
+                <select id="filter-limit">
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="200" selected>200</option>
+                    <option value="500">500</option>
+                </select>
+            </label>
+
+            <!-- Boutons d'action -->
+            <div style="margin-left: auto; display: flex; gap: 12px; margin-top: 10px;">
+                <button id="btn-export-csv" class="btn-action btn-export" onclick="exportHistory()">📥 Exporter en CSV</button>
+                <button id="btn-clear-history" class="btn-action btn-clear" onclick="clearHistory()">🗑️ Vider l'historique</button>
+            </div>
+        </div>
+
+        <!-- Tableau de l'historique -->
+        <div class="history-table-container">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Date & Heure</th>
+                        <th>Serre</th>
+                        <th>Compartiment</th>
+                        <th>Type</th>
+                        <th>Détails de l'événement</th>
+                    </tr>
+                </thead>
+                <tbody id="history-table-body">
+                    <!-- Rempli par JavaScript -->
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #64748b; padding: 30px;">Chargement de l'historique...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/history.js') }}"></script>
+{% endblock %}

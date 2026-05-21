@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Nsele - Commandes{% endblock %}
+{% block header_title %}Serre connectée - Commandes{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/commands.css') }}">
+{% endblock %}
+
+{% block content %}
+<div style="padding: 0 24px;">
+    <div class="card commands-container">
+        <h2 style="margin-top: 0; margin-bottom: 6px;">Contrôle Manuel des Serres</h2>
+        <p class="subtle" style="margin-bottom: 24px;">Sélectionnez une serre pour forcer l'état des actionneurs (Pompe et Cooling).</p>
+
+        <!-- Sélection de la Serre -->
+        <div class="form-grid" style="margin-bottom: 28px;">
+            <label>
+                Choisir la serre à commander
+                <select id="commands-gh-select" style="width: 100%; font-size: 1.1rem; padding: 10px;">
+                    {% for gh in greenhouses %}
+                    <option value="{{ gh.id }}">{{ gh.name }} ({{ gh.culture }})</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <p class="subtle">Culture active sur cette serre : <strong id="commands-culture-name" style="color: #0f172a;">--</strong></p>
+        </div>
+
+        <!-- Actionneurs -->
+        <div>
+            <!-- Arrosage -->
+            <div class="actuator-card">
+                <div class="actuator-info">
+                    <span class="actuator-icon">💧</span>
+                    <div>
+                        <h3 style="margin: 0;">Arrosage (Pompe)</h3>
+                        <span id="status-pump" class="badge-status status-off">Arrêté</span>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn-actuate btn-on" onclick="sendActuatorCommand('pump', 'on')">Activer</button>
+                    <button class="btn-actuate btn-off" onclick="sendActuatorCommand('pump', 'off')">Désactiver</button>
+                </div>
+            </div>
+
+            <!-- Refroidissement -->
+            <div class="actuator-card">
+                <div class="actuator-info">
+                    <span class="actuator-icon">❄️</span>
+                    <div>
+                        <h3 style="margin: 0;">Refroidissement (Cooling)</h3>
+                        <span id="status-cooling" class="badge-status status-off">Arrêté</span>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn-actuate btn-on" onclick="sendActuatorCommand('cooling', 'on')">Activer</button>
+                    <button class="btn-actuate btn-off" onclick="sendActuatorCommand('cooling', 'off')">Désactiver</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast -->
+    <div id="toast-message" class="card" style="display: none; position: fixed; bottom: 24px; right: 24px; background: #065f46; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 1000; border: none; padding: 16px 24px;">
+        <!-- Rempli dynamiquement -->
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/commands.js') }}"></script>
+{% endblock %}

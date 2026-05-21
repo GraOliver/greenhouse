@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Nsele - Serre Connectée{% endblock %}</title>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="app-shell">
+        <!-- En-tête commune -->
+        <header class="app-header">
+            <div>
+                <p class="eyebrow">Nsele</p>
+                <h2>{% block header_title %}Serre connectée{% endblock %}</h2>
+            </div>
+            <nav>
+                <a href="/" {% if request.path == '/' %}style="text-decoration: underline; color: white;"{% endif %}>Dashboard</a>
+                <a href="/commande" {% if request.path == '/commande' %}style="text-decoration: underline; color: white;"{% endif %}>Commandes</a>
+                <a href="/history" {% if request.path == '/history' %}style="text-decoration: underline; color: white;"{% endif %}>Historique</a>
+                <a href="/settings" {% if request.path == '/settings' %}style="text-decoration: underline; color: white;"{% endif %}>Paramètres</a>
+            </nav>
+        </header>
+
+        <!-- Contenu principal -->
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Scripts externes -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Scripts personnalisés -->
+    {% block scripts %}{% endblock %}
+</body>
+</html>

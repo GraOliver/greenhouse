@@ -1,0 +1,40 @@
+/* Styles spécifiques à la page Paramètres */
+
+.settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+@media (max-width: 1024px) {
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.db-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+.db-table th,
+.db-table td {
+    text-align: left;
+    padding: 10px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.db-table th {
+    font-weight: 600;
+    color: #475569;
+    background: rgba(241, 245, 249, 0.6);
+}
+
+.threshold-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}

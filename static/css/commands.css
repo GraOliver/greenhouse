@@ -1,0 +1,84 @@
+/* Styles spécifiques à la page Commandes */
+
+.commands-container {
+    max-width: 600px;
+    margin: 40px auto;
+}
+
+.actuator-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    background: rgba(241, 245, 249, 0.6);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.actuator-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.actuator-icon {
+    font-size: 2rem;
+    background: white;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.btn-group {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-actuate {
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.btn-on {
+    background: #059669;
+    color: white;
+}
+
+.btn-on:hover {
+    background: #047857;
+    transform: translateY(-1px);
+}
+
+.btn-off {
+    background: #64748b;
+    color: white;
+}
+
+.btn-off:hover {
+    background: #475569;
+    transform: translateY(-1px);
+}
+
+.badge-status {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 9999px;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 4px;
+}
+
+.status-off {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-on {
+    background: #d1fae5;
+    color: #065f46;
+}

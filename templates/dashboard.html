@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Nsele - Dashboard{% endblock %}
+{% block header_title %}Serre connectée{% endblock %}
+
+{% block content %}
+<!-- Barre de sélection des serres -->
+<div style="margin-bottom: 24px;">
+    <div id="greenhouse-bar" class="greenhouse-bar">
+        <!-- Rempli dynamiquement -->
+        <div class="gh-item">'Chargement...'</div>
+    </div>
+</div>
+
+<!-- Grille Bento du Tableau de Bord -->
+<div id="dashboard-content" class="bento-dashboard" style="display: none;">
+    
+    <!-- Colonne Gauche : Titre, Culture et Graphique -->
+    <div class="bento-left">
+        <div class="hero">
+            <h2 id="gh-title" style="margin: 0 0 8px;">Serre 1 </h2>
+            <p class="subtle" style="margin: 0;">Culture actuelle: <span id="gh-culture">--</span></p>
+        </div>
+
+        <!-- Carte pour afficher les moyennes de la serre -->
+        <div class="card" style="margin-bottom: 24px; border: 1px solid rgba(226, 232, 240, 0.8);">
+            <h3 style="margin-top: 0; margin-bottom: 16px; color: #0f172a;">Moyennes de la Serre</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div style="background: rgba(245, 158, 66, 0.08); border-left: 4px solid #f59e42; padding: 12px; border-radius: 8px;">
+                    <span style="font-size: 0.85rem; color: #7c2d12; font-weight: 600; display: block; margin-bottom: 4px;">Temp. Air Moy.</span>
+                    <strong style="font-size: 1.4rem; color: #0f172a;"><span id="avg-TA">--</span> °C</strong>
+                </div>
+                <div style="background: rgba(234, 179, 8, 0.08); border-left: 4px solid #eab308; padding: 12px; border-radius: 8px;">
+                    <span style="font-size: 0.85rem; color: #713f12; font-weight: 600; display: block; margin-bottom: 4px;">Temp. Sol Moy.</span>
+                    <strong style="font-size: 1.4rem; color: #0f172a;"><span id="avg-TS">--</span> °C</strong>
+                </div>
+                <div style="background: rgba(59, 130, 246, 0.08); border-left: 4px solid #3b82f6; padding: 12px; border-radius: 8px;">
+                    <span style="font-size: 0.85rem; color: #1e3a8a; font-weight: 600; display: block; margin-bottom: 4px;">Hum. Air Moy.</span>
+                    <strong style="font-size: 1.4rem; color: #0f172a;"><span id="avg-HA">--</span> %</strong>
+                </div>
+                <div style="background: rgba(16, 185, 129, 0.08); border-left: 4px solid #10b981; padding: 12px; border-radius: 8px;">
+                    <span style="font-size: 0.85rem; color: #064e3b; font-weight: 600; display: block; margin-bottom: 4px;">Hum. Sol Moy.</span>
+                    <strong style="font-size: 1.4rem; color: #0f172a;"><span id="avg-HS">--</span> %</strong>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card chart-card" style="height: auto; min-height: 350px; display: flex; flex-direction: column;">
+            <h3 style="margin-top: 0; margin-bottom: 16px;">Évolution Globale (Moyenne)</h3>
+            <div style="position: relative; flex-grow: 1; min-height: 300px;">
+                <canvas id="sensorChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Colonne Droite : Les Compartiments -->
+    <div class="bento-right">
+        <div class="compartments-grid" id="compartments-container">
+            <!-- Rempli dynamiquement -->
+        </div>
+    </div>
+
+</div>
+
+<div id="loading-card" class="page-card">Chargement des données en cours...</div>
+
+<!-- État vide si aucune serre n'est configurée -->
+<div id="empty-card" class="page-card" style="display: none; text-align: center; padding: 60px 24px; max-width: 600px; margin: 40px auto; border-radius: 16px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);">
+    <span style="font-size: 4rem; display: block; margin-bottom: 20px; animation: pulse 2s infinite;">🌱</span>
+    <h3 style="margin-top: 0; margin-bottom: 12px; color: #0f172a; font-size: 1.5rem;">Aucune serre configurée</h3>
+    <p class="subtle" style="margin-bottom: 28px; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.6;">Pour commencer à visualiser vos capteurs et gérer l'automatisation, veuillez ajouter votre première serre dans l'espace de configuration.</p>
+    <a href="/settings" class="btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; font-size: 1rem; border-radius: 8px; font-weight: 600;">⚙️ Configurer une Serre</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
+
