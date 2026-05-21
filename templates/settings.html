@@ -1,245 +1,273 @@
-{% extends "base.html" %}
-
-{% block title %}Nsele - Paramètres{% endblock %}
-{% block header_title %}Serre connectée - Paramètres{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
-<style>
-    /* Disposition en grille pour les paramètres */
-    .settings-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 24px;
-        margin-bottom: 40px;
-    }
-    @media (max-width: 1024px) {
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nsele - Paramètres</title>
+    <!-- Styles custom -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
         .settings-grid {
-            grid-template-columns: 1fr;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 40px;
         }
-    }
-
-    /* Tableau de base de données */
-    .db-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-        font-size: 0.9rem;
-    }
-    .db-table th, .db-table td {
-        text-align: left;
-        padding: 10px;
-        border-bottom: 1px solid rgba(226, 232, 240, 0.6);
-    }
-    .db-table th {
-        font-weight: 600;
-        color: #475569;
-        background: rgba(241, 245, 249, 0.6);
-    }
-
-    /* Grille pour les champs de seuils */
-    .threshold-inputs {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-    }
-</style>
-{% endblock %}
-
-{% block content %}
-<div style="padding: 0 24px;">
-    <div class="settings-grid">
-        
-        <!-- COLONNE GAUCHE : GESTION DES SERRES -->
-        <div style="display: flex; flex-direction: column; gap: 24px;">
-            
-            <!-- Liste des serres actives -->
-            <div class="card">
-                <h2 style="margin-top: 0; margin-bottom: 6px;">Serres Actives</h2>
-                <p class="subtle" style="margin-bottom: 16px;">Liste des serres configurées et de leur culture.</p>
-                <table class="db-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nom de la serre</th>
-                            <th>Culture assignée</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="greenhouses-table-body">
-                        <!-- Rempli dynamiquement par JavaScript -->
-                        {% if greenhouses %}
-                            {% for gh in greenhouses %}
-                            <tr>
-                                <td><strong>{{ gh.id }}</strong></td>
-                                <td>{{ gh.name }}</td>
-                                <td>{{ gh.culture }}</td>
-                                <td><a href="/greenhouse/{{ gh.id }}" style="color: #0369a1; text-decoration: none; font-weight: 600;">Détails →</a></td>
-                            </tr>
-                            {% endfor %}
-                        {% endif %}
-                    </tbody>
-                </table>
+        @media (max-width: 1024px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .db-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        .db-table th, .db-table td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+        }
+        .db-table th {
+            font-weight: 600;
+            color: #475569;
+            background: rgba(241, 245, 249, 0.6);
+        }
+        .threshold-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <header class="app-header">
+            <div>
+                <p class="eyebrow">Nsele</p>
+                <h2>Serre connectée</h2>
             </div>
-
-            <!-- Formulaire pour créer/configurer une serre -->
-            <div class="card">
-                <h2 style="margin-top: 0; margin-bottom: 6px;">Ajouter / Configurer une Serre</h2>
-                <p class="subtle" style="margin-bottom: 20px;">Créez une nouvelle serre ou changez sa culture.</p>
+            <nav>
+                <a href="/">Dashboard</a>
+                <a href="/commande">Commandes</a>
+                <a href="/history">Historique</a>
+                <a href="/settings" style="text-decoration: underline; color: white;">Paramètres</a>
+            </nav>
+        </header>
+        <main>
+            <div class="settings-grid">
                 
-                <!-- Créer une nouvelle serre -->
-                <form id="create-gh-form" class="form-grid" style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid rgba(226, 232, 240, 0.6);" onsubmit="createGreenhouse(); return false;">
-                    <h4 style="margin: 0; color: #065f46;">Créer une nouvelle Serre</h4>
-                    <div class="threshold-inputs">
-                        <label>
-                            Identifiant (ex: S5)
-                            <input type="text" id="gh-id-input" placeholder="S5" required style="width: 100%; margin-top: 4px;">
-                        </label>
-                        <label>
-                            Nom descriptif
-                            <input type="text" id="gh-name-input" placeholder="Serre 5" required style="width: 100%; margin-top: 4px;">
-                        </label>
+                <!-- COLONNE GAUCHE : GESTION DES SERRES -->
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <!-- Liste des serres -->
+                    <div class="card">
+                        <h2 style="margin-top: 0; margin-bottom: 6px;">Serres Actives</h2>
+                        <p class="subtle" style="margin-bottom: 16px;">Liste des serres configurées et de leur culture.</p>
+                        <table class="db-table">
+                            <thead>
+                                <tr>
+                                    <th>Nom de la serre</th>
+                                    <th>Culture assignée</th>
+                                </tr>
+                            </thead>
+                            <tbody id="greenhouses-table-body">
+                                {% if greenhouses %}
+                                    {% for gh in greenhouses %}
+                                    <tr>
+                                        <td>{{ gh.name }}</td>
+                                        <td>{{ gh.culture or 'Aucune' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="2">Aucune serre configurée.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
                     </div>
-                    <label>
-                        Assigner une Culture
-                        <select id="gh-culture-select" required style="width: 100%; margin-top: 4px;">
-                            <!-- Options dynamiques remplies par JavaScript -->
-                        </select>
-                    </label>
-                    <button type="submit" class="btn-primary" style="margin-top: 6px;">Créer la Serre</button>
-                </form>
 
-                <!-- Assigner une culture à une serre existante -->
-                <form id="assign-culture-form" class="form-grid" onsubmit="return false;">
-                    <h4 style="margin: 0; color: #065f46;">Assigner une culture à une serre</h4>
-                    <label>
-                        Choisir la serre
-                        <select id="assign-gh-select" required style="width: 100%; margin-top: 4px;">
-                            <!-- Options dynamiques -->
-                        </select>
-                    </label>
-                    <label>
-                        Nouvelle Culture
-                        <select id="assign-culture-select" required style="width: 100%; margin-top: 4px;">
-                            <!-- Options dynamiques -->
-                        </select>
-                    </label>
-                    <button type="submit" class="btn-primary" style="margin-top: 6px;">Enregistrer le changement</button>
-                </form>
+                    <!-- Formulaire Serres -->
+                    <div class="card">
+                        <h2 style="margin-top: 0; margin-bottom: 6px;">Ajouter / Configurer une Serre</h2>
+                        <p class="subtle" style="margin-bottom: 20px;">Créez une nouvelle serre ou changez sa culture.</p>
+                        
+                        <!-- Créer Serre -->
+                        <form id="create-gh-form" class="form-grid" action="/settings/greenhouse" method="post" style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid rgba(226, 232, 240, 0.6);">
+                            <h4 style="margin: 0; color: #065f46;">Créer une nouvelle Serre</h4>
+                            <div class="threshold-inputs">
+                                <label>
+                                    Identifiant (ex: S5)
+                                    <input type="text" id="gh-id-input" name="gh-id-input" placeholder="S5" required>
+                                </label>
+                                <label>
+                                    Nom descriptif
+                                    <input type="text" id="gh-name-input" name="gh-name-input" placeholder="Serre 5" required>
+                                </label>
+                            </div>
+                            <label>
+                                Assigner une Culture
+                                <select id="gh-culture-select" name="gh-culture-select" required>
+                                    <option value="" disabled selected>Choisir une culture...</option>
+                                    {% for culture in cultures %}
+                                    <option value="{{ culture.id }}">{{ culture.id }} ({{ culture.name }})</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                            <button type="submit" class="btn-primary" style="margin-top: 6px;">Créer la Serre</button>
+                        </form>
+
+                        <!-- Modifier Culture Serre Existante -->
+                        <form id="assign-culture-form" class="form-grid" action="/settings/assign-culture" method="post">
+                            <h4 style="margin: 0; color: #065f46;">Assigner une culture à une serre</h4>
+                            <label>
+                                Choisir la serre
+                                <select id="assign-gh-select" name="assign-gh-select" required>
+                                    <option value="" disabled selected>Choisir une serre...</option>
+                                    {% for gh in greenhouses %}
+                                    <option value="{{ gh.id }}">{{ gh.id }} - {{ gh.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                            <label>
+                                Nouvelle Culture
+                                <select id="assign-culture-select" name="assign-culture-select" required>
+                                    <option value="" disabled selected>Choisir une culture...</option>
+                                    {% for culture in cultures %}
+                                    <option value="{{ culture.id }}">{{ culture.id }} ({{ culture.name }})</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                            <button type="submit" class="btn-primary" style="margin-top: 6px;">Enregistrer le changement</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- COLONNE DROITE : GESTION DES CULTURES -->
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <!-- Liste des cultures -->
+                    <div class="card">
+                        <h2 style="margin-top: 0; margin-bottom: 6px;">Cultures & Seuils</h2>
+                        <p class="subtle" style="margin-bottom: 16px;">Paramètres critiques pour le déclenchement automatique.</p>
+                        <table class="db-table">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Hum. Sol (Min - Max)</th>
+                                    <th>Temp. Air (Min - Max)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cultures-table-body">
+                                {% if cultures %}
+                                    {% for culture in cultures %}
+                                    <tr>
+                                        <td>{{ culture.id }}</td>
+                                        <td>{{ culture.humidite_sol_min or 0 }}% - {{ culture.humidite_sol_max or 0 }}%</td>
+                                        <td>{{ culture.temperature_air_min or 0 }}°C - {{ culture.temperature_air_max or 0 }}°C</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3">Aucune culture enregistrée.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Formulaire Cultures -->
+                    <div class="card">
+                        <h2 style="margin-top: 0; margin-bottom: 6px;">Créer / Éditer une Culture</h2>
+                        <p class="subtle" style="margin-bottom: 20px;">Définissez les seuils de température et d'humidité.</p>
+                        
+                        <form id="culture-form" class="form-grid" action="/settings/culture" method="post">
+                            <label>
+                                Sélectionner une culture existante (ou "Nouvelle Culture")
+                                <select id="culture-selector" name="culture-selector">
+                                    <option value="NEW">-- Nouvelle Culture --</option>
+                                    {% for culture in cultures %}
+                                    <option value="{{ culture.id }}">{{ culture.id }} ({{ culture.name }})</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+
+                            <div class="threshold-inputs">
+                                <label>
+                                    Identifiant unique (ex: fraises)
+                                    <input type="text" id="culture-id" name="culture-id" placeholder="fraises" required>
+                                </label>
+                                <label>
+                                    Nom d'affichage (ex: Fraises)
+                                    <input type="text" id="culture-name" name="culture-name" placeholder="Fraises" required>
+                                </label>
+                            </div>
+
+                            <h4 style="margin: 10px 0 0; color: #065f46;">Seuils d'Humidité du Sol (%)</h4>
+                            <div class="threshold-inputs">
+                                <label>
+                                    Min (Active l'arrosage)
+                                    <input type="number" id="min-hum-sol" name="min-hum-sol" value="30" step="0.5" required>
+                                </label>
+                                <label>
+                                    Max (Arrête l'arrosage)
+                                    <input type="number" id="max-hum-sol" name="max-hum-sol" value="70" step="0.5" required>
+                                </label>
+                            </div>
+
+                            <h4 style="margin: 10px 0 0; color: #065f46;">Seuils de Température de l'Air (°C)</h4>
+                            <div class="threshold-inputs">
+                                <label>
+                                    Min (Arrête la ventilation)
+                                    <input type="number" id="min-temp-air" name="min-temp-air" value="18" step="0.5" required>
+                                </label>
+                                <label>
+                                    Max (Active la ventilation)
+                                    <input type="number" id="max-temp-air" name="max-temp-air" value="30" step="0.5" required>
+                                </label>
+                            </div>
+
+                            <h4 style="margin: 10px 0 0; color: #065f46;">Autres seuils informatifs (Temp. Sol / Hum. Air)</h4>
+                            <div class="threshold-inputs">
+                                <label>
+                                    Hum. Air Min (%)
+                                    <input type="number" id="min-hum-air" name="min-hum-air" value="50" step="0.5" required>
+                                </label>
+                                <label>
+                                    Hum. Air Max (%)
+                                    <input type="number" id="max-hum-air" name="max-hum-air" value="80" step="0.5" required>
+                                </label>
+                            </div>
+                            <div class="threshold-inputs">
+                                <label>
+                                    Temp. Sol Min (°C)
+                                    <input type="number" id="min-temp-sol" name="min-temp-sol" value="15" step="0.5" required>
+                                </label>
+                                <label>
+                                    Temp. Sol Max (°C)
+                                    <input type="number" id="max-temp-sol" name="max-temp-sol" value="25" step="0.5" required>
+                                </label>
+                            </div>
+
+                            <button type="submit" id="culture-submit-btn" class="btn-primary" style="margin-top: 10px;">Créer la Culture</button>
+                        </form>
+                    </div>
+                </div>
+
             </div>
-        </div>
 
-        <!-- COLONNE DROITE : GESTION DES CULTURES -->
-        <div style="display: flex; flex-direction: column; gap: 24px;">
-            
-            <!-- Liste des cultures et seuils -->
-            <div class="card">
-                <h2 style="margin-top: 0; margin-bottom: 6px;">Cultures & Seuils</h2>
-                <p class="subtle" style="margin-bottom: 16px;">Paramètres critiques pour le déclenchement automatique.</p>
-                <table class="db-table">
-                    <thead>
-                        <tr>
-                            <th>Nom</th>
-                            <th>Hum. Sol (Min - Max)</th>
-                            <th>Temp. Air (Min - Max)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cultures-table-body">
-                        <!-- Rempli dynamiquement par JavaScript -->
-                    </tbody>
-                </table>
+            <!-- Toast / Message temporaire -->
+            <div id="toast-message" class="card" style="display: none; position: fixed; bottom: 24px; right: 24px; background: #065f46; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 1000; border: none; padding: 16px 24px;">
+                <!-- Rempli dynamiquement -->
             </div>
-
-            <!-- Formulaire pour créer/éditer une culture -->
-            <div class="card">
-                <h2 style="margin-top: 0; margin-bottom: 6px;">Créer / Éditer une Culture</h2>
-                <p class="subtle" style="margin-bottom: 20px;">Définissez les seuils de température et d'humidité.</p>
-                
-                <form id="culture-form" class="form-grid" onsubmit="return false;">
-                    <!-- Sélecteur de culture -->
-                    <label>
-                        Sélectionner une culture existante (ou "Nouvelle Culture")
-                        <select id="culture-selector" style="width: 100%; margin-top: 4px;">
-                            <option value="NEW">-- Nouvelle Culture --</option>
-                            <!-- Options dynamiques -->
-                        </select>
-                    </label>
-
-                    <!-- Identifiants de la culture -->
-                    <div class="threshold-inputs">
-                        <label>
-                            Identifiant unique (ex: fraises)
-                            <input type="text" id="culture-id" placeholder="fraises" required style="width: 100%; margin-top: 4px;">
-                        </label>
-                        <label>
-                            Nom d'affichage (ex: Fraises)
-                            <input type="text" id="culture-name" placeholder="Fraises" required style="width: 100%; margin-top: 4px;">
-                        </label>
-                    </div>
-
-                    <!-- Seuils d'humidité du sol -->
-                    <h4 style="margin: 10px 0 0; color: #065f46;">Seuils d'Humidité du Sol (%)</h4>
-                    <div class="threshold-inputs">
-                        <label>
-                            Min (Active l'arrosage)
-                            <input type="number" id="min-hum-sol" value="30" step="0.5" required style="width: 100%; margin-top: 4px;">
-                        </label>
-                        <label>
-                            Max (Arrête l'arrosage)
-                            <input type="number" id="max-hum-sol" value="70" step="0.5" required style="width: 100%; margin-top: 4px;">
-                        </label>
-                    </div>
-
-                    <!-- Seuils de température de l'air -->
-                    <h4 style="margin: 10px 0 0; color: #065f46;">Seuils de Température de l'Air (°C)</h4>
-                    <div class="threshold-inputs">
-                        <label>
-                            Min (Arrête la ventilation)
-                            <input type="number" id="min-temp-air" value="18" step="0.5" required style="width: 100%; margin-top: 4px;">
-                        </label>
-                        <label>
-                            Max (Active la ventilation)
-                            <input type="number" id="max-temp-air" value="30" step="0.5" required style="width: 100%; margin-top: 4px;">
-                        </label>
-                    </div>
-
-                    <!-- Autres seuils informatifs -->
-                    <h4 style="margin: 10px 0 0; color: #065f46;">Autres seuils informatifs (Temp. Sol / Hum. Air)</h4>
-                    <div class="threshold-inputs">
-                        <label>
-                            Hum. Air Min (%)
-                            <input type="number" id="min-hum-air" value="50" step="0.5" required style="width: 100%; margin-top: 4px;">
-                        </label>
-                        <label>
-                            Hum. Air Max (%)
-                            <input type="number" id="max-hum-air" value="80" step="0.5" required style="width: 100%; margin-top: 4px;">
-                        </label>
-                    </div>
-                    <div class="threshold-inputs">
-                        <label>
-                            Temp. Sol Min (°C)
-                            <input type="number" id="min-temp-sol" value="15" step="0.5" required style="width: 100%; margin-top: 4px;">
-                        </label>
-                        <label>
-                            Temp. Sol Max (°C)
-                            <input type="number" id="max-temp-sol" value="25" step="0.5" required style="width: 100%; margin-top: 4px;">
-                        </label>
-                    </div>
-
-                    <button type="submit" id="culture-submit-btn" class="btn-primary" style="margin-top: 10px;">Créer la Culture</button>
-                </form>
-            </div>
-        </div>
-
+        </main>
     </div>
 
-    <!-- Toast de notification -->
-    <div id="toast-message" class="card" style="display: none; position: fixed; bottom: 24px; right: 24px; background: #065f46; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 1000; border: none; padding: 16px 24px;">
-        <!-- Rempli dynamiquement -->
-    </div>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
-{% endblock %}
+    <script>
+        window.INITIAL_GREENHOUSES = {{ greenhouses|tojson }};
+        window.INITIAL_CULTURES = {{ cultures|tojson }};
+    </script>
+    <!-- Script Settings -->
+    <script src="{{ url_for('static', filename='settings.js') }}"></script>
+</body>
+</html>

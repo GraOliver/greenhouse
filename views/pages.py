@@ -9,7 +9,7 @@ Ce module utilise un blueprint unique pour exposer :
 import json
 import random
 import time
-from flask import Blueprint, Response, render_template, request, stream_with_context, jsonify
+from flask import Blueprint, Response, render_template, request, stream_with_context, jsonify, redirect, url_for
 
 from models.database import get_db_connection
 from models.greenhouse import (
@@ -20,6 +20,14 @@ from models.greenhouse import (
     get_all_greenhouses,
     get_greenhouse,
     update_greenhouse,
+)
+from models.culture import get_culture
+from models.culture import (
+    create_culture,
+    get_all_cultures,
+    get_culture,
+    update_culture,
+    delete_culture,
 )
 
 # Blueprint principal des pages et des API de l'application.
@@ -99,7 +107,64 @@ def settings():
     # Page de configuration des serres et paramètres.
     # Passe la liste des serres et des cultures au template.
     greenhouses = get_all_greenhouses()
-    return render_template('settings.html', greenhouses=greenhouses)
+    cultures = get_all_cultures()
+    return render_template('settings.html', greenhouses=greenhouses, cultures=cultures)
+
+
+@pages_bp.route('/settings/culture', methods=['POST'])
+def settings_save_culture():
+    form = request.form
+    selected_culture = form.get('culture-selector')
+    culture_id = form.get('culture-id', '').strip()
+    culture_name = form.get('culture-name', '').strip()
+
+    if not culture_id or not culture_name:
+        return redirect(url_for('pages.settings'))
+
+    payload = {
+        'id': culture_id,
+        'name': culture_name,
+        'temperature_sol_min': float(form.get('min-temp-sol', 0)),
+        'temperature_sol_max': float(form.get('max-temp-sol', 0)),
+        'temperature_air_min': float(form.get('min-temp-air', 0)),
+        'temperature_air_max': float(form.get('max-temp-air', 0)),
+        'humidite_sol_min': float(form.get('min-hum-sol', 0)),
+        'humidite_sol_max': float(form.get('max-hum-sol', 0)),
+        'humidite_air_min': float(form.get('min-hum-air', 0)),
+        'humidite_air_max': float(form.get('max-hum-air', 0)),
+    }
+
+    if selected_culture and selected_culture != 'NEW':
+        update_culture(selected_culture, payload)
+    else:
+        create_culture(**payload)
+
+    return redirect(url_for('pages.settings'))
+
+
+@pages_bp.route('/settings/greenhouse', methods=['POST'])
+def settings_create_greenhouse():
+    form = request.form
+    gh_id = form.get('gh-id-input', '').strip()
+    gh_name = form.get('gh-name-input', '').strip()
+    culture_id = form.get('gh-culture-select', '').strip()
+
+    if gh_id and gh_name and culture_id:
+        create_greenhouse(gh_id, gh_name, culture_id)
+
+    return redirect(url_for('pages.settings'))
+
+
+@pages_bp.route('/settings/assign-culture', methods=['POST'])
+def settings_assign_culture():
+    form = request.form
+    greenhouse_id = form.get('assign-gh-select', '').strip()
+    culture_id = form.get('assign-culture-select', '').strip()
+
+    if greenhouse_id and culture_id:
+        update_greenhouse(greenhouse_id, {'culture': culture_id})
+
+    return redirect(url_for('pages.settings'))
 
 
 @pages_bp.route('/greenhouse/<gh_id>')
@@ -108,7 +173,9 @@ def greenhouse_detail(gh_id):
     greenhouse = get_greenhouse(gh_id)
     if greenhouse is None:
         return render_template('404.html'), 404
-    return render_template('greenhouse_detail.html', greenhouse=greenhouse, gh_id=gh_id)
+    culture = get_culture(greenhouse['culture_id']) if greenhouse.get('culture_id') else None
+    return render_template('greenhouse_detail.html', greenhouse=greenhouse, culture=culture, gh_id=gh_id)
+
 
 
 # Routes API JSON utilisées par le frontend JavaScript.
@@ -191,28 +258,7 @@ def api_greenhouse_latest_state(gh_id):
 def api_cultures():
     # Retourne toutes les cultures existantes pour alimenter les formulaires
     # et afficher les seuils sur la page de détail de la serre.
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute(
-        '''
-        SELECT
-            nom AS id,
-            description AS name,
-            temperature_air_min,
-            temperature_air_max,
-            temperature_sol_min,
-            temperature_sol_max,
-            humidite_air_min,
-            humidite_air_max,
-            humidite_sol_min,
-            humidite_sol_max
-        FROM cultures
-        ORDER BY nom
-        '''
-    )
-    cultures = [dict(row) for row in cursor.fetchall()]
-    conn.close()
-    return jsonify(cultures)
+    return jsonify(get_all_cultures())
 
 
 @pages_bp.route('/api/stream')

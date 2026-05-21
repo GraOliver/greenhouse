@@ -66,7 +66,22 @@
     <!-- Colonne Droite : Les Compartiments -->
     <div class="bento-right">
         <div class="compartments-grid" id="compartments-container">
-            <!-- Rempli dynamiquement -->
+            {% if selected_greenhouse and selected_greenhouse.compartments %}
+                {% for comp in selected_greenhouse.compartments %}
+                <div class="compartment-card">
+                    <h4>{{ comp }}</h4>
+                    <p class="subtle">Données en attente...</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;">
+                        <div><strong>TA</strong> : -- °C</div>
+                        <div><strong>TS</strong> : -- °C</div>
+                        <div><strong>HA</strong> : -- %</div>
+                        <div><strong>HS</strong> : -- %</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="gh-item">Aucun compartiment configuré.</div>
+            {% endif %}
         </div>
     </div>
 </div>

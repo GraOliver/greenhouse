@@ -14,7 +14,9 @@ def create_app():
     return app
 
 
-# Démarrage direct de l'application en mode debug pour le développement.
+# Crée l'application une seule fois afin que `flask run` fonctionne aussi.
+app = create_app()
+
+
 if __name__ == '__main__':
-    app = create_app()
     app.run(debug=True)

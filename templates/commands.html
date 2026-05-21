@@ -23,7 +23,7 @@
                     {% endfor %}
                 </select>
             </label>
-            <p class="subtle">Culture active sur cette serre : <strong id="commands-culture-name" style="color: #0f172a;">--</strong></p>
+            <p class="subtle">Culture active sur cette serre : <strong id="commands-culture-name" style="color: #0f172a;">{{ greenhouses[0].culture if greenhouses else '--' }}</strong></p>
         </div>
 
         <!-- Actionneurs -->
