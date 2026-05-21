@@ -158,11 +158,12 @@ def settings_save_culture():
 def settings_create_greenhouse():
     form = request.form
     gh_name = form.get('gh-name-input', '').strip()
+    gh_desc = form.get('gh-description-input', '').strip()
     culture_id = form.get('gh-culture-select', '').strip()
 
     if gh_name and culture_id:
         gh_id = slugify(gh_name)
-        create_greenhouse(gh_id, gh_name, culture_id)
+        create_greenhouse(gh_id, gh_desc or gh_name, culture_id)
 
     return redirect(url_for('pages.settings'))
 
