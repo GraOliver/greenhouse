@@ -36,15 +36,15 @@ async function fetchGreenhouses() {
         const emptyCard = document.getElementById('empty-card');
 
         if (greenhouses.length > 0) {
-            emptyCard.style.display = 'none';
-            dashboardContent.style.display = 'grid';
+            if (emptyCard) emptyCard.style.display = 'none';
+            if (dashboardContent) dashboardContent.style.display = 'grid';
             renderGreenhouseBar();
             selectGreenhouse(selectedId || greenhouses[0].id);
         } else {
-            emptyCard.style.display = 'block';
-            dashboardContent.style.display = 'none';
+            if (emptyCard) emptyCard.style.display = 'block';
+            if (dashboardContent) dashboardContent.style.display = 'none';
         }
-        loadingCard.style.display = 'none';
+        if (loadingCard) loadingCard.style.display = 'none';
     } catch (error) {
         console.error("Erreur de récupération des serres :", error);
     }
@@ -77,8 +77,10 @@ async function selectGreenhouse(id) {
 
     const currentGh = greenhouses.find(g => g.id === selectedId);
     if (currentGh) {
-        document.getElementById('gh-title').textContent = currentGh.name;
-        document.getElementById('gh-culture').textContent = currentGh.culture;
+        const titleEl = document.getElementById('gh-title');
+        const cultureEl = document.getElementById('gh-culture');
+        if (titleEl) titleEl.textContent = currentGh.name;
+        if (cultureEl) cultureEl.textContent = currentGh.culture;
     }
 
     // Réinitialiser et charger les données
@@ -127,7 +129,9 @@ async function fetchLatestState(ghId) {
 }
 
 function initChart() {
-    const ctx = document.getElementById('sensorChart').getContext('2d');
+    const chartEl = document.getElementById('sensorChart');
+    if (!chartEl) return;
+    const ctx = chartEl.getContext('2d');
     if (chartInstance) {
         chartInstance.destroy();
     }
@@ -180,6 +184,7 @@ function refreshSensorUI() {
     const comps = currentGh && currentGh.compartments ? currentGh.compartments : [];
     
     const compartmentsContainer = document.getElementById('compartments-container');
+    if (!compartmentsContainer) return;
     compartmentsContainer.innerHTML = '';
     
     comps.forEach(compId => {
@@ -233,10 +238,15 @@ function refreshSensorUI() {
 }
 
 function updateAveragesUI(msg) {
-    document.getElementById('avg-TA').textContent = msg.TA !== undefined ? msg.TA : '--';
-    document.getElementById('avg-TS').textContent = msg.TS !== undefined ? msg.TS : '--';
-    document.getElementById('avg-HA').textContent = msg.HA !== undefined ? msg.HA : '--';
-    document.getElementById('avg-HS').textContent = msg.HS !== undefined ? msg.HS : '--';
+    const avgTA = document.getElementById('avg-TA');
+    const avgTS = document.getElementById('avg-TS');
+    const avgHA = document.getElementById('avg-HA');
+    const avgHS = document.getElementById('avg-HS');
+
+    if (avgTA) avgTA.textContent = msg.TA !== undefined ? msg.TA : '--';
+    if (avgTS) avgTS.textContent = msg.TS !== undefined ? msg.TS : '--';
+    if (avgHA) avgHA.textContent = msg.HA !== undefined ? msg.HA : '--';
+    if (avgHS) avgHS.textContent = msg.HS !== undefined ? msg.HS : '--';
 }
 
 function renderChartUI() {
