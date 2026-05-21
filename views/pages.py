@@ -71,9 +71,14 @@ def _build_placeholder_state(greenhouse):
 @pages_bp.route('/')
 def dashboard():
     # Page principale du dashboard.
-    # Récupère toutes les serres et les passe au contexte du template.
+    # Récupère toutes les serres depuis la base de données.
     greenhouses = get_all_greenhouses()
-    return render_template('dashboard.html', greenhouses=greenhouses)
+    selected_greenhouse = greenhouses[0] if greenhouses else None
+    return render_template(
+        'dashboard.html',
+        greenhouses=greenhouses,
+        selected_greenhouse=selected_greenhouse
+    )
 
 
 @pages_bp.route('/commande')
