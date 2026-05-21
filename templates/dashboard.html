@@ -7,20 +7,30 @@
 <!-- Barre de sélection des serres -->
 <div style="margin-bottom: 24px;">
     <div id="greenhouse-bar" class="greenhouse-bar">
-        <!-- Rempli dynamiquement -->
-        <div class="gh-item">Aucune serre configurée... </div>
+        {% if greenhouses %}
+            {% for gh in greenhouses %}
+            <div class="gh-item">
+                <strong>{{ gh.name }}</strong>
+                <small>{{ gh.culture or 'Culture inconnue' }}</small>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="gh-item">Aucune serre configurée...</div>
+        {% endif %}
     </div>
 </div>
 
+{% if greenhouses %}
 <!-- Grille Bento du Tableau de Bord -->
-<div id="dashboard-content" class="bento-dashboard" style="display: none;">
+<div id="dashboard-content" class="bento-dashboard">
     
     <!-- Colonne Gauche : Titre, Culture et Graphique -->
     <div class="bento-left">
         <div class="hero">
-            <h2 id="gh-title" style="margin: 0 0 8px;">Serre 1 </h2>
-            <p class="subtle" style="margin: 0;">Culture actuelle: <span id="gh-culture">--</span></p>
+            <h2 id="gh-title" style="margin: 0 0 8px;">{{ selected_greenhouse.name if selected_greenhouse else 'Aucune serre configurée' }}</h2>
+            <p class="subtle" style="margin: 0;">Culture actuelle: <span id="gh-culture">{{ selected_greenhouse.culture if selected_greenhouse else '--' }}</span></p>
         </div>
+        <p id="sensor-status" class="subtle" style="margin-bottom: 24px;">En attente des données...</p>
 
         <!-- Carte pour afficher les moyennes de la serre -->
         <div class="card" style="margin-bottom: 24px; border: 1px solid rgba(226, 232, 240, 0.8);">
@@ -59,21 +69,26 @@
             <!-- Rempli dynamiquement -->
         </div>
     </div>
-
 </div>
 
-<div id="loading-card" class="page-card">Chargement des données en cours...</div>
-
-<!-- État vide si aucune serre n'est configurée -->
-<div id="empty-card" class="page-card" style="display: none; text-align: center; padding: 60px 24px; max-width: 600px; margin: 40px auto; border-radius: 16px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);">
+<div id="loading-card" class="page-card">En attente des données...</div>
+{% else %}
+<div id="empty-card" class="page-card" style="text-align: center; padding: 60px 24px; max-width: 600px; margin: 40px auto; border-radius: 16px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);">
     <span style="font-size: 4rem; display: block; margin-bottom: 20px; animation: pulse 2s infinite;">🌱</span>
-    <h3 style="margin-top: 0; margin-bottom: 12px; color: #0f172a; font-size: 1.5rem;">Aucune serre configurée</h3>
+    <h3 style="margin-top: 0; margin-bottom: 12px; color: #0f172a; font-size: 1.5rem;">Aucune serre n'est configurée</h3>
     <p class="subtle" style="margin-bottom: 28px; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.6;">Pour commencer à visualiser vos capteurs et gérer l'automatisation, veuillez ajouter votre première serre dans l'espace de configuration.</p>
     <a href="/settings" class="btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; font-size: 1rem; border-radius: 8px; font-weight: 600;">⚙️ Configurer une Serre</a>
 </div>
+{% endif %}
+    
 {% endblock %}
 
 {% block scripts %}
+<script>
+    // Données initiales chargées par Flask depuis la page.
+    window.INITIAL_GREENHOUSES = {{ greenhouses|tojson }};
+    window.INITIAL_SELECTED_GREENHOUSE = {{ selected_greenhouse|tojson }};
+</script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock %}
 
