@@ -10,7 +10,7 @@ def process_raw_sensor_message(gh_id, comp_id, data):
         if isinstance(value, (int, float)):
             processed_data[f"{gh_id}{comp_id}{key.lower()}"] = value
         else:
-            processed_data[f"{gh_id}{comp_id}{key.lower()}"] = str(value)
+            processed_data[f"{key.lower()}"] = str(value)
     
     print(f"Données traitées pour serre {gh_id}, compartiment {comp_id} : {processed_data}")
     return processed_data
