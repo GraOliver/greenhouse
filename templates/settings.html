@@ -69,6 +69,7 @@
                                 <tr>
                                     <th>Nom de la serre</th>
                                     <th>Culture assignée</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="greenhouses-table-body">
@@ -76,7 +77,10 @@
                                     {% for gh in greenhouses %}
                                     <tr>
                                         <td>{{ gh.name }}</td>
-                                        <td>{{ gh.culture or 'Aucune' }}</td>
+                                        <td>{{ gh.culture or 'Aucune' }} </td>
+                                        <td>
+                                            <a href="{{url_for('pages.greenhouse_detail', gh_id=gh.id)}}" style="color: #065f46; text-decoration: underline;">Voir les détails</a>
+                                        </td>
                                     </tr>
                                     {% endfor %}
                                 {% else %}
@@ -97,10 +101,6 @@
                         <form id="create-gh-form" class="form-grid" action="/settings/greenhouse" method="post" style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid rgba(226, 232, 240, 0.6);">
                             <h4 style="margin: 0; color: #065f46;">Créer une nouvelle Serre</h4>
                             <div class="threshold-inputs">
-                                <label>
-                                    Identifiant (ex: S5)
-                                    <input type="text" id="gh-id-input" name="gh-id-input" placeholder="S5" required>
-                                </label>
                                 <label>
                                     Nom descriptif
                                     <input type="text" id="gh-name-input" name="gh-name-input" placeholder="Serre 5" required>
@@ -194,11 +194,7 @@
 
                             <div class="threshold-inputs">
                                 <label>
-                                    Identifiant unique (ex: fraises)
-                                    <input type="text" id="culture-id" name="culture-id" placeholder="fraises" required>
-                                </label>
-                                <label>
-                                    Nom d'affichage (ex: Fraises)
+                                    Nom de la culture
                                     <input type="text" id="culture-name" name="culture-name" placeholder="Fraises" required>
                                 </label>
                             </div>

@@ -1,7 +1,6 @@
 function onCultureSelectorChange(cultures) {
     const selector = document.getElementById('culture-selector');
     const submitButton = document.getElementById('culture-submit-btn');
-    const cultureIdInput = document.getElementById('culture-id');
     const cultureNameInput = document.getElementById('culture-name');
     const minHumSol = document.getElementById('min-hum-sol');
     const maxHumSol = document.getElementById('max-hum-sol');
@@ -16,7 +15,6 @@ function onCultureSelectorChange(cultures) {
         const selectedId = selector.value;
         if (selectedId === 'NEW') {
             submitButton.textContent = 'Créer la Culture';
-            cultureIdInput.value = '';
             cultureNameInput.value = '';
             minHumSol.value = 30;
             maxHumSol.value = 70;
@@ -35,7 +33,6 @@ function onCultureSelectorChange(cultures) {
         }
 
         submitButton.textContent = 'Modifier la Culture';
-        cultureIdInput.value = culture.id;
         cultureNameInput.value = culture.name || culture.id;
         minHumSol.value = culture.humidite_sol_min || 0;
         maxHumSol.value = culture.humidite_sol_max || 0;

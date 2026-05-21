@@ -9,6 +9,8 @@ Ce module utilise un blueprint unique pour exposer :
 import json
 import random
 import time
+import re
+import unicodedata
 from flask import Blueprint, Response, render_template, request, stream_with_context, jsonify, redirect, url_for
 
 from models.database import get_db_connection
@@ -32,6 +34,16 @@ from models.culture import (
 
 # Blueprint principal des pages et des API de l'application.
 pages_bp = Blueprint('pages', __name__)
+
+
+def slugify(value: str) -> str: # Convertit une chaîne en un slug URL-friendly (ex: "Tomate Cerise" -> "tomate-cerise").
+    if not value:
+        return ''
+    normalized = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+    normalized = normalized.lower().strip()
+    normalized = re.sub(r'[^a-z0-9]+', '-', normalized)
+    normalized = re.sub(r'-+', '-', normalized).strip('-')
+    return normalized or value.lower().replace(' ', '-')
 
 
 def _build_placeholder_state(greenhouse):
@@ -115,12 +127,12 @@ def settings():
 def settings_save_culture():
     form = request.form
     selected_culture = form.get('culture-selector')
-    culture_id = form.get('culture-id', '').strip()
     culture_name = form.get('culture-name', '').strip()
 
-    if not culture_id or not culture_name:
+    if not culture_name:
         return redirect(url_for('pages.settings'))
 
+    culture_id = slugify(culture_name)
     payload = {
         'id': culture_id,
         'name': culture_name,
@@ -145,11 +157,11 @@ def settings_save_culture():
 @pages_bp.route('/settings/greenhouse', methods=['POST'])
 def settings_create_greenhouse():
     form = request.form
-    gh_id = form.get('gh-id-input', '').strip()
     gh_name = form.get('gh-name-input', '').strip()
     culture_id = form.get('gh-culture-select', '').strip()
 
-    if gh_id and gh_name and culture_id:
+    if gh_name and culture_id:
+        gh_id = slugify(gh_name)
         create_greenhouse(gh_id, gh_name, culture_id)
 
     return redirect(url_for('pages.settings'))
