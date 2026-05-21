@@ -3,7 +3,7 @@ import sqlite3
 from models.db import load_data
 
 # Chemin du fichier SQLite (serre.db à la racine du projet)
-DB_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'serre.db'))
+DB_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'serre.db'))
 
 
 def get_db_path() -> str:

@@ -100,35 +100,35 @@
             </div>
             <div class="info-row">
                 <span>Nom descriptif</span>
-                <strong id="info-name">--</strong>
+                <strong id="info-name">{{ greenhouse.name }}</strong>
             </div>
             <div class="info-row">
                 <span>Culture assignée</span>
-                <strong id="info-culture">--</strong>
+                <strong id="info-culture">{{ greenhouse.culture }}</strong>
             </div>
             <div class="info-row">
                 <span>Statut de la serre</span>
-                <strong id="info-status" style="color: #059669;">--</strong>
+                <strong id="info-status" style="color: #059669;">{{ greenhouse.status }}</strong>
             </div>
 
             <!-- Seuils de déclenchement -->
             <h3 style="margin-top: 30px; margin-bottom: 12px; color: #0f172a;">Seuils de déclenchement associés</h3>
             <div class="info-row">
                 <span>Température de l'Air (Min - Max)</span>
-                <strong id="threshold-temp-air">--</strong>
+                <strong id="threshold-temp-air">{{ culture.temperature_air_min if culture else '--' }}°C - {{ culture.temperature_air_max if culture else '--' }}°C</strong>
             </div>
             <div class="info-row">
                 <span>Humidité du Sol (Min - Max)</span>
-                <strong id="threshold-hum-sol">--</strong>
+                <strong id="threshold-hum-sol">{{ culture.humidite_sol_min if culture else '--' }}% - {{ culture.humidite_sol_max if culture else '--' }}%</strong>
             </div>
             <div class="info-row">
                 <span>Humidité de l'Air (Min - Max)</span>
-                <strong id="threshold-hum-air">--</strong>
+                <strong id="threshold-hum-air">{{ culture.humidite_air_min if culture else '--' }}% - {{ culture.humidite_air_max if culture else '--' }}%</strong>
             </div>
 
             <!-- Actions -->
             <div class="action-row">
-                <button id="delete-gh-btn" class="btn-danger" onclick="deleteGreenhouse()">🗑️ Supprimer la Serre</button>
+                <a id="delete-gh-btn" class="btn-danger" href="{{url_for('pages.delete_greenhouse', gh_id=greenhouse.id)}}" ">🗑️ Supprimer la Serre</a>
                 <a href="/settings" class="btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Retour</a>
             </div>
         </div>
@@ -141,7 +141,16 @@
             <!-- Liste des compartiments -->
             <div id="compartments-list-container" style="min-height: 150px;">
                 <ul id="compartments-list" style="list-style: none; padding: 0; margin: 0;">
-                    <!-- Rempli dynamiquement par le JS -->
+                    {% if greenhouse.compartments %}
+                        {% for comp in greenhouse.compartments %}
+                        <li class="comp-item">
+                            <span>{{ comp }}</span>
+                            <strong>Actif</strong>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li>Aucun compartiment configuré.</li>
+                    {% endif %}
                 </ul>
             </div>
 
