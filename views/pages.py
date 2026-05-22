@@ -184,15 +184,8 @@ def settings_assign_culture():
     return redirect(url_for('pages.settings'))
 
 @pages_bp.route('/settings/delete-greenhouse/<gh_id>', methods=['GET'])
-def delete_greenhouse(gh_id):
-    """supprime la l'enregistrement
-
-    Args:
-        gh_id (_type_): _description_
-
-    Returns:
-        _type_: _description_
-    """
+def delete_greenhouse_settings(gh_id):
+    """Supprime un enregistrement de serre depuis la page de paramètres."""
     delete_greenhouse(gh_id)
     return redirect(url_for('pages.settings'))
 

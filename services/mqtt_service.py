@@ -54,6 +54,22 @@ def broadcast_sensor_data(topic, payload):
             except Exception:
                 pass
             
+# Fonction pour publier une commande de contrôle manuel à un actionneur
+def publish_actuator_command(gh_id, actuator_type, state):
+    """
+    Publie une commande de contrôle pour un actionneur (pompe, cooling, etc.)
+    sur le broker MQTT sous le sujet 'nsele/actuator/<gh_id>/<actuator_type>'.
+    """
+    try:
+        topic = f"nsele/actuator/{gh_id}/{actuator_type}"
+        payload = json.dumps({'state': state.upper()})
+        client.publish(topic, payload)
+        print(f"Commande MQTT publiée sur {topic} : {payload}")
+        return True
+    except Exception as e:
+        print(f"Erreur lors de la publication de la commande MQTT : {e}")
+        return False
+
 # Fonction de rappel pour la connexion MQTT
 def on_connect(client, userdata, flags, rc):
     """Callback appelé lors de la connexion au broker MQTT."""
