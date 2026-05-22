@@ -31,6 +31,8 @@ from models.culture import (
     update_culture,
     delete_culture,
 )
+from services.mqtt_service import get_sensor_data
+from processing.cache import get_cache_data, get_cache_entries
 
 # Blueprint principal des pages et des API de l'application.
 pages_bp = Blueprint('pages', __name__)
@@ -308,3 +310,48 @@ def api_stream():
             time.sleep(5)
 
     return Response(stream_with_context(event_stream()), content_type='text/event-stream')
+
+
+@pages_bp.route('/api/sensor-data/<gh_id>')
+def api_sensor_data(gh_id):
+    """API pour récupérer les données calculées (moyennes, comparaison avec seuils) d'une serre.
+
+    Charge d'abord les données en mémoire (mqtt_service), puis du cache JSON si nécessaire.
+    Retourne un dictionnaire contenant :
+    - computed : moyennes calculées par compartiment {'C1': {'ta': 12.0, ...}, ...}
+    - comparison : résultats de la comparaison avec l'historique et les seuils
+    - compartments : liste des compartiments de la serre
+    - timestamp : moment du dernier calcul
+    - entries : historique des dernières entrées du cache (pour graphiques)
+    """
+    greenhouse = get_greenhouse(gh_id)
+    
+    # D'abord, essayer de récupérer les données en mémoire (plus récentes)
+    sensor_data = get_sensor_data(gh_id)
+    
+    response = {
+        'compartments': greenhouse['compartments'] if greenhouse else [],
+        'computed': {},
+        'comparison': {},
+        'timestamp': None,
+        'entries': []
+    }
+
+    if sensor_data is not None:
+        # Données disponibles en mémoire
+        response.update(sensor_data)
+    else:
+        # Sinon, charger du cache JSON (pour survie aux refreshes de page)
+        cache_data = get_cache_data(gh_id)
+        if cache_data and cache_data.get('computed'):
+            response['computed'] = cache_data.get('computed', {})
+            response['comparison'] = cache_data.get('comparison', {})
+        else:
+            response['error'] = f'Aucune donnée de capteur disponible pour la serre {gh_id}'
+    
+    # Charger l'historique du cache pour les graphiques
+    cache_entries = get_cache_entries(gh_id, limit=100)
+    if cache_entries:
+        response['entries'] = cache_entries
+
+    return jsonify(response)
