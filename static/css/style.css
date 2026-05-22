@@ -119,6 +119,19 @@ nav a:hover {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
+@media (max-width: 479px) {
+  .list-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  .list-grid {
+    gap: 16px;
+  }
+}
+
 .card, .page-card {
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
@@ -190,16 +203,173 @@ input, select {
   font-weight: 600;
 }
 
-@media (max-width: 680px) {
+/* ======== RESPONSIVE DESIGN ======== */
+
+/* Mobile (< 480px) */
+@media (max-width: 479px) {
   .app-header {
+    padding: 12px 16px;
     flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
+  }
+
+  .app-header h2 {
+    font-size: 1.1rem;
+  }
+
+  nav {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   nav a {
     display: inline-block;
     margin-left: 0;
-    margin-right: 12px;
+    margin-right: 0;
+    font-size: 0.9rem;
+    padding: 6px 0;
+  }
+
+  main {
+    padding: 16px 16px 40px;
+  }
+
+  .bento-dashboard {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .compartments-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card, .page-card {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .hero {
+    padding: 16px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+  }
+
+  .gh-item {
+    padding: 8px 12px;
+    margin-right: 8px;
+    font-size: 0.85rem;
+  }
+
+  .greenhouse-bar {
+    gap: 8px;
+  }
+
+  .sensors-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+/* Tablet (480px - 768px) */
+@media (min-width: 480px) and (max-width: 767px) {
+  .app-header {
+    padding: 14px 24px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  nav {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  nav a {
+    display: inline-block;
+    margin-left: 0;
+    margin-right: 0;
+    font-size: 0.95rem;
+  }
+
+  main {
+    padding: 20px 24px 50px;
+  }
+
+  .bento-dashboard {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .compartments-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .card, .page-card {
+    padding: 18px;
+  }
+
+  .sensors-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Medium screens (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .app-header {
+    padding: 16px 32px;
+  }
+
+  nav a {
+    margin-left: 18px;
+    font-size: 0.95rem;
+  }
+
+  main {
+    padding: 28px 32px 50px;
+  }
+
+  .bento-dashboard {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .compartments-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+}
+
+/* Large screens (1024px+) */
+@media (min-width: 1024px) {
+  .app-header {
+    padding: 16px 40px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  nav a {
+    margin-left: 24px;
+  }
+
+  main {
+    padding: 32px 40px 60px;
+  }
+
+  .bento-dashboard {
+    grid-template-columns: 1.2fr 1fr;
+    gap: 24px;
+  }
+
+  .compartments-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
   }
 }
 
@@ -210,6 +380,13 @@ input, select {
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin-bottom: 20px;
+}
+
+@media (max-width: 479px) {
+  .sensors-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
 }
 
 .sensor-item {
@@ -329,15 +506,30 @@ input, select {
   gap: 20px;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 479px) {
+  .compartments-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  .compartments-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
   .compartments-row {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 768px) {
+@media (min-width: 1024px) {
   .compartments-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
   }
 }
 
@@ -372,8 +564,9 @@ input, select {
   }
 }
 
-@media (max-width: 680px) {
+@media (max-width: 767px) {
   .compartments-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 }

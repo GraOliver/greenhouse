@@ -7,12 +7,6 @@
     margin-bottom: 40px;
 }
 
-@media (max-width: 1024px) {
-    .settings-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
 .db-table {
     width: 100%;
     border-collapse: collapse;
@@ -37,4 +31,79 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
+}
+
+/* ======== RESPONSIVE DESIGN ======== */
+
+/* Mobile (< 480px) */
+@media (max-width: 479px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .threshold-inputs {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .db-table {
+    font-size: 0.8rem;
+  }
+
+  .db-table th,
+  .db-table td {
+    padding: 8px 6px;
+  }
+}
+
+/* Tablet (480px - 768px) */
+@media (min-width: 480px) and (max-width: 767px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+
+  .threshold-inputs {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .db-table {
+    font-size: 0.85rem;
+  }
+
+  .db-table th,
+  .db-table td {
+    padding: 9px 8px;
+  }
+}
+
+/* Medium screens (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .threshold-inputs {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+}
+
+/* Large screens (1024px+) */
+@media (min-width: 1024px) {
+  .settings-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+
+  .threshold-inputs {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
 }

@@ -2,7 +2,8 @@
 
 .commands-container {
     max-width: 600px;
-    margin: 40px auto;
+    margin: 0 auto;
+    width: 100%;
 }
 
 .actuator-card {
@@ -14,12 +15,16 @@
     border-radius: 12px;
     margin-bottom: 16px;
     border: 1px solid rgba(226, 232, 240, 0.6);
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .actuator-info {
     display: flex;
     align-items: center;
     gap: 16px;
+    flex: 1;
+    min-width: 200px;
 }
 
 .actuator-icon {
@@ -28,11 +33,13 @@
     padding: 10px;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    flex-shrink: 0;
 }
 
 .btn-group {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
 .btn-actuate {
@@ -42,6 +49,7 @@
     cursor: pointer;
     border: none;
     transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 .btn-on {
@@ -81,4 +89,93 @@
 .status-on {
     background: #d1fae5;
     color: #065f46;
+}
+
+/* ======== RESPONSIVE DESIGN ======== */
+
+/* Mobile (< 480px) */
+@media (max-width: 479px) {
+  .commands-container {
+    max-width: 100%;
+  }
+
+  .actuator-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .actuator-info {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .btn-group {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .btn-actuate {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    min-width: 70px;
+  }
+
+  #toast-message {
+    left: 16px !important;
+    right: 16px !important;
+    bottom: 16px !important;
+    max-width: calc(100% - 32px) !important;
+  }
+}
+
+/* Tablet (480px - 768px) */
+@media (min-width: 480px) and (max-width: 767px) {
+  .commands-container {
+    max-width: 100%;
+  }
+
+  .actuator-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 18px;
+  }
+
+  .actuator-info {
+    width: 100%;
+    gap: 12px;
+  }
+
+  .btn-group {
+    width: 100%;
+  }
+
+  .btn-actuate {
+    flex: 1;
+    min-width: 80px;
+  }
+
+  #toast-message {
+    left: 20px !important;
+    right: 20px !important;
+    bottom: 20px !important;
+  }
+}
+
+/* Medium screens (768px+) */
+@media (min-width: 768px) {
+  .actuator-card {
+    flex-direction: row;
+    flex-wrap: nowrap;
+  }
+
+  .btn-group {
+    flex-wrap: nowrap;
+  }
+
+  .btn-actuate {
+    flex: 0 1 auto;
+  }
 }
