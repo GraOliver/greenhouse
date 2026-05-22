@@ -11,6 +11,7 @@ let mqttData = {};
 let history = [];
 let chartInstance = null;
 let chartInterval = null;
+let sensorDataPollingInterval = null;  // Pour le polling des données calculées
 
 // Initialisation
 window.addEventListener('DOMContentLoaded', () => {
@@ -86,8 +87,15 @@ async function selectGreenhouse(id) {
     // Réinitialiser et charger les données
     history = [];
     if (chartInterval) clearInterval(chartInterval);
+    if (sensorDataPollingInterval) clearInterval(sensorDataPollingInterval);  // Arrêter ancien polling
+    
     initChart();
     await fetchLatestState(selectedId);
+    
+    // Démarrer le polling des données calculées (moyennes, comparaison, etc.)
+    await fetchSensorCalculations(selectedId);
+    sensorDataPollingInterval = setInterval(() => fetchSensorCalculations(selectedId), 5000);
+    
     chartInterval = setInterval(updateChartData, 2500);
 }
 
@@ -126,6 +134,91 @@ async function fetchLatestState(ghId) {
     } catch (err) {
         console.warn("⚠️ Impossible de charger l'état initial :", err);
     }
+}
+
+/**
+ * Récupère les données calculées (moyennes et comparaisons) depuis l'API.
+ * Actualise l'UI avec les moyennes en temps réel.
+ */
+async function fetchSensorCalculations(ghId) {
+    try {
+        const response = await fetch(`/api/sensor-data/${ghId}`);
+        if (!response.ok) {
+            console.warn(`⚠️ Erreur API sensor-data pour ${ghId}`);
+            return;
+        }
+        
+        const data = await response.json();
+        
+        // Si des données sont disponibles
+        if (data.computed && data.computed[ghId]) {
+            const ghData = data.computed[ghId];
+            
+            // Calculer les moyennes par métrique sur tous les compartiments
+            let totalTA = 0, totalTS = 0, totalHA = 0, totalHS = 0, count = 0;
+            Object.keys(ghData).forEach(compId => {
+                const comp = ghData[compId];
+                if (comp.ta !== null && comp.ta !== undefined) totalTA += comp.ta;
+                if (comp.ts !== null && comp.ts !== undefined) totalTS += comp.ts;
+                if (comp.ha !== null && comp.ha !== undefined) totalHA += comp.ha;
+                if (comp.hs !== null && comp.hs !== undefined) totalHS += comp.hs;
+                count++;
+            });
+            
+            if (count > 0) {
+                const averages = {
+                    TA: (totalTA / count).toFixed(1),
+                    TS: (totalTS / count).toFixed(1),
+                    HA: (totalHA / count).toFixed(1),
+                    HS: (totalHS / count).toFixed(1)
+                };
+                updateAveragesUI(averages);
+            }
+            
+            // Afficher les décisions/alertes si disponibles
+            if (data.comparison && data.comparison[ghId]) {
+                displayDecisions(data.comparison[ghId], ghId);
+            }
+        }
+    } catch (err) {
+        console.warn("⚠️ Impossible de récupérer les données calculées :", err);
+    }
+}
+
+/**
+ * Affiche les décisions et alertes (si seuils dépassés).
+ */
+function displayDecisions(comparisonData, ghId) {
+    // Pour chaque compartiment, afficher les décisions (alertes, avertissements)
+    Object.keys(comparisonData).forEach(compId => {
+        const comp = comparisonData[compId];
+        if (comp.decisions && comp.decisions.length > 0) {
+            // Chercher la carte du compartiment
+            const compCard = document.querySelector(`[data-compartment="${compId}"]`);
+            if (!compCard) {
+                // Si pas encore marquée, on cherche par contenu
+                const allCards = document.querySelectorAll('.compartment-card');
+                const targetCard = Array.from(allCards).find(card => 
+                    card.textContent.includes(`Compartiment ${compId}`)
+                );
+                if (targetCard) {
+                    // Ajouter les alertes
+                    let alertsHtml = '';
+                    comp.decisions.forEach(decision => {
+                        alertsHtml += `<div style="background:#fee2e2; color:#991b1b; padding:8px; border-radius:4px; margin-top:8px; font-size:0.85rem;">⚠️ ${decision}</div>`;
+                    });
+                    
+                    // Insérer après le grid des capteurs
+                    const grid = targetCard.querySelector('.sensors-grid');
+                    if (grid) {
+                        const alertContainer = document.createElement('div');
+                        alertContainer.innerHTML = alertsHtml;
+                        grid.parentNode.insertBefore(alertContainer, grid.nextSibling);
+                    }
+                }
+            }
+        }
+    });
 }
 
 function initChart() {

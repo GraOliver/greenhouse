@@ -31,6 +31,7 @@ from models.culture import (
     update_culture,
     delete_culture,
 )
+from services.mqtt_service import get_sensor_data
 
 # Blueprint principal des pages et des API de l'application.
 pages_bp = Blueprint('pages', __name__)
@@ -308,3 +309,24 @@ def api_stream():
             time.sleep(5)
 
     return Response(stream_with_context(event_stream()), content_type='text/event-stream')
+
+
+@pages_bp.route('/api/sensor-data/<gh_id>')
+def api_sensor_data(gh_id):
+    """API pour récupérer les données calculées (moyennes, comparaison avec seuils) d'une serre.
+    
+    Retourne un dictionnaire contenant :
+    - computed : moyennes calculées par compartiment {'C1': {'ta': 12.0, ...}, ...}
+    - comparison : résultats de la comparaison avec l'historique et les seuils
+    - timestamp : moment du dernier calcul
+    """
+    sensor_data = get_sensor_data(gh_id)
+    if sensor_data is None:
+        return jsonify({
+            'error': f'Aucune donnée de capteur disponible pour la serre {gh_id}',
+            'computed': {},
+            'comparison': {},
+            'timestamp': None
+        }), 200  # 200 car c'est normal si pas encore reçu de données MQTT
+    
+    return jsonify(sensor_data)

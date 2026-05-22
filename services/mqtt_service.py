@@ -5,6 +5,7 @@
 import paho.mqtt.client as mqtt
 import json
 import queue
+import time
 from processing.processor import process_raw_sensor_message
 
 # Configuration du broker MQTT
@@ -14,6 +15,10 @@ client = mqtt.Client() # creation client
 
 # Liste de files d'attente (Queues) pour les clients SSE connectés (HTML pages)
 sse_listeners = []
+
+# Dictionnaire global pour stocker les dernières données calculées par greenhouse
+# Format : { 'S1': {'computed': {...}, 'comparison': {...}, 'timestamp': ...}, ... }
+sensor_data_store = {}
 
 def register_listener():
     """Enregistre un nouveau client SSE et retourne sa file d'attente dédiée."""
@@ -56,6 +61,11 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe('nsele/#')
 
 
+# Fonction pour récupérer les dernières données calculées pour une serre
+def get_sensor_data(gh_id):
+    """Retourne les données calculées stockées pour une serre donnée."""
+    return sensor_data_store.get(gh_id, None)
+
 # Fonction de rappel pour la réception de messages MQTT
 def on_message(client, userdata, msg):
     """Callback appelé lors de la réception d'un message MQTT."""
@@ -72,7 +82,23 @@ def on_message(client, userdata, msg):
         if len(parts) >= 4:
             gh_id = parts[2]  # ID de la serre
             comp_id = parts[3]  # ID du compartiment
-            data = process_raw_sensor_message(gh_id, comp_id, data)
+            print(f" {data['raw'] if 'raw' in data else data}\n")
+            
+            # Appeler le processor pour calculer moyennes et comparaison
+            try:
+                result = process_raw_sensor_message(gh_id, comp_id, data['raw'] if 'raw' in data else data)
+                # Stocker le résultat pour accès futur (via API)
+                if gh_id not in sensor_data_store:
+                    sensor_data_store[gh_id] = {}
+                sensor_data_store[gh_id] = {
+                    'computed': result.get('computed', {}),
+                    'comparison': result.get('comparison', {}),
+                    'timestamp': time.time()
+                }
+                print(f"Données calculées et stockées pour {gh_id} : {result}")
+            except Exception as e:
+                print(f"Erreur lors du traitement des données : {e}")
+            
         else:
             print(f"Format de topic inattendu : {msg.topic}. Attendu 'nsele/raw_sensor/<gh_id>/<comp_id>'.")
             return
