@@ -1,0 +1,70 @@
+{
+  "S1": {
+    "computed": {
+      "S1": {
+        "C2": {
+          "ta": 26.0,
+          "ts": 25.0,
+          "ha": 75.0,
+          "hs": 89.0
+        }
+      }
+    },
+    "comparison": {
+      "S1": {
+        "C2": {
+          "current": {
+            "ta": 26.0,
+            "ts": 25.0,
+            "ha": 75.0,
+            "hs": 89.0
+          },
+          "historical": {
+            "ta": null,
+            "ha": null,
+            "ts": null,
+            "hs": null
+          },
+          "thresholds": {},
+          "decisions": []
+        }
+      }
+    },
+    "entries": [
+      {
+        "timestamp": 1779436231.380534,
+        "datetime": "2026-05-22T08:50:31.380533",
+        "computed": {
+          "S1": {
+            "C2": {
+              "ta": 26.0,
+              "ts": 25.0,
+              "ha": 75.0,
+              "hs": 89.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "C2": {
+              "current": {
+                "ta": 26.0,
+                "ts": 25.0,
+                "ha": 75.0,
+                "hs": 89.0
+              },
+              "historical": {
+                "ta": null,
+                "ha": null,
+                "ts": null,
+                "hs": null
+              },
+              "thresholds": {},
+              "decisions": []
+            }
+          }
+        }
+      }
+    ]
+  }
+}

@@ -76,6 +76,19 @@ def create_tables():
     ''')
 
     cur.execute('''
+        CREATE TABLE IF NOT EXISTS mesures_calculees (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            serre_nom TEXT NOT NULL,
+            compartment TEXT NOT NULL,
+            temperature_air_moy REAL,
+            temperature_sol_moy REAL,
+            humidite_air_moy REAL,
+            humidite_sol_moy REAL,
+            date_mesure DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    cur.execute('''
         CREATE TABLE IF NOT EXISTS actionneurs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             serre_id INTEGER,

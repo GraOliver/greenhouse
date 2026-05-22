@@ -3,6 +3,7 @@ from flask import Flask
 from models.database import initialize_database
 from views.pages import pages_bp
 from services.mqtt_service import mqtt_start, on_connect, on_message
+from processing.migration import start_migration_scheduler
 
 
 # Création de l'application Flask et enregistrement des blueprints.
@@ -13,6 +14,7 @@ def create_app():
     app.register_blueprint(pages_bp)
     initialize_database()
     mqtt_start()  # Démarrer le service MQTT après le lancement de Flask
+    start_migration_scheduler()  # Démarrer le scheduler de migration vers la BDD
     return app
 
 

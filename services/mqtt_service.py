@@ -5,7 +5,9 @@
 import paho.mqtt.client as mqtt
 import json
 import queue
+import time
 from processing.processor import process_raw_sensor_message
+from processing.cache import save_sensor_data_to_cache
 
 # Configuration du broker MQTT
 MQTT_BROKER = 'localhost' # Le IPV de la machine ici nous sommess en locale
@@ -14,6 +16,10 @@ client = mqtt.Client() # creation client
 
 # Liste de files d'attente (Queues) pour les clients SSE connectés (HTML pages)
 sse_listeners = []
+
+# Dictionnaire global pour stocker les dernières données calculées par greenhouse
+# Format : { 'S1': {'computed': {...}, 'comparison': {...}, 'timestamp': ...}, ... }
+sensor_data_store = {}
 
 def register_listener():
     """Enregistre un nouveau client SSE et retourne sa file d'attente dédiée."""
@@ -47,23 +53,7 @@ def broadcast_sensor_data(topic, payload):
                 q.put_nowait(message)  # Ajouter le nouveau message
             except Exception:
                 pass
-
-# Fonction pour publier une commande de contrôle manuel à un actionneur
-def publish_actuator_command(gh_id, actuator_type, state):
-    """
-    Publie une commande de contrôle pour un actionneur (pompe, cooling, etc.)
-    sur le broker MQTT sous le sujet 'nsele/actuator/<gh_id>/<actuator_type>'.
-    """
-    try:
-        topic = f"nsele/actuator/{gh_id}/{actuator_type}"
-        payload = json.dumps({'state': state.upper()})
-        client.publish(topic, payload)
-        print(f"Commande MQTT publiée sur {topic} : {payload}")
-        return True
-    except Exception as e:
-        print(f"Erreur lors de la publication de la commande MQTT : {e}")
-        return False
-
+            
 # Fonction de rappel pour la connexion MQTT
 def on_connect(client, userdata, flags, rc):
     """Callback appelé lors de la connexion au broker MQTT."""
@@ -71,6 +61,11 @@ def on_connect(client, userdata, flags, rc):
     # S'abonner à tous les sujets sous nsele/ (raw_sensors, sensors, actuators)
     client.subscribe('nsele/#')
 
+
+# Fonction pour récupérer les dernières données calculées pour une serre
+def get_sensor_data(gh_id):
+    """Retourne les données calculées stockées pour une serre donnée."""
+    return sensor_data_store.get(gh_id, None)
 
 # Fonction de rappel pour la réception de messages MQTT
 def on_message(client, userdata, msg):
@@ -88,19 +83,25 @@ def on_message(client, userdata, msg):
         if len(parts) >= 4:
             gh_id = parts[2]  # ID de la serre
             comp_id = parts[3]  # ID du compartiment
+            print(f" {data['raw'] if 'raw' in data else data}\n")
             
-            # Récupérer les valeurs brutes avant formatage pour la description du log
-            raw_ta = data.get('ta', '--')
-            raw_ts = data.get('ts', '--')
-            raw_ha = data.get('ha', '--')
-            raw_hs = data.get('hs', '--')
+            # Appeler le processor pour calculer moyennes et comparaison
+            try:
+                result = process_raw_sensor_message(gh_id, comp_id, data['raw'] if 'raw' in data else data)
+                # Stocker le résultat pour accès futur (via API)
+                if gh_id not in sensor_data_store:
+                    sensor_data_store[gh_id] = {}
+                sensor_data_store[gh_id] = {
+                    'computed': result.get('computed', {}),
+                    'comparison': result.get('comparison', {}),
+                    'timestamp': time.time()
+                }
+                # Sauvegarder les données calculées dans le cache JSON pour persistence
+                save_sensor_data_to_cache(gh_id, result)
+                print(f"Données calculées et stockées pour {gh_id} : {result}")
+            except Exception as e:
+                print(f"Erreur lors du traitement des données : {e}")
             
-            data = process_raw_sensor_message(gh_id, comp_id, data)
-            
-            # Sauvegarder cet événement de capteur dans l'historique SQLite
-            from models.database import save_history_event
-            details = f"Temp. Air: {raw_ta}°C | Temp. Sol: {raw_ts}°C | Hum. Air: {raw_ha}% | Hum. Sol: {raw_hs}%"
-            save_history_event(gh_id, comp_id, 'capteur', details)
         else:
             print(f"Format de topic inattendu : {msg.topic}. Attendu 'nsele/raw_sensor/<gh_id>/<comp_id>'.")
             return
