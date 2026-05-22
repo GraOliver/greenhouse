@@ -85,6 +85,18 @@ def create_tables():
         )
     ''')
 
+    # Table pour stocker le journal unifié de l'historique (capteurs et actionneurs)
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS history_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date_heure DATETIME DEFAULT CURRENT_TIMESTAMP,
+            serre_id TEXT NOT NULL,
+            compartiment TEXT,
+            type_event TEXT NOT NULL,
+            details TEXT NOT NULL
+        )
+    ''')
+
     conn.commit()
     conn.close()
 
@@ -150,3 +162,35 @@ def initialize_database():
 
     if serre_count == 0 or culture_count == 0:
         seed_database_from_json()
+
+
+# Fonction d'aide pour sauvegarder un événement dans l'historique (capteurs ou actionneurs)
+def save_history_event(serre_id, compartiment, type_event, details):
+    """
+    Enregistre un événement dans la table 'history_logs' de SQLite.
+    Commenté en français pour expliquer chaque étape.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Insertion des données de l'événement dans la table history_logs
+        cursor.execute(
+            """
+            INSERT INTO history_logs (serre_id, compartiment, type_event, details) 
+            VALUES (?, ?, ?, ?)
+            """,
+            (
+                serre_id.upper(), 
+                compartiment.upper() if compartiment else '--', 
+                type_event, 
+                details
+            )
+        )
+        
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"Erreur lors de la sauvegarde de l'historique dans SQLite : {e}")
+        return False

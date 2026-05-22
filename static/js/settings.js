@@ -1,3 +1,8 @@
+/**
+ * Module JavaScript côté client pour la gestion de la configuration des cultures
+ * sur la page des paramètres.
+ */
+
 function onCultureSelectorChange(cultures) {
     const selector = document.getElementById('culture-selector');
     const submitButton = document.getElementById('culture-submit-btn');

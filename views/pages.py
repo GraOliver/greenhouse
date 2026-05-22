@@ -13,7 +13,8 @@ import re
 import unicodedata
 from flask import Blueprint, Response, render_template, request, stream_with_context, jsonify, redirect, url_for
 
-from models.database import get_db_connection
+from services.mqtt_service import publish_actuator_command
+from models.database import get_db_connection, save_history_event
 from models.greenhouse import (
     add_compartment,
     create_greenhouse,
@@ -111,7 +112,8 @@ def commande():
 @pages_bp.route('/history')
 def history_page():
     # Page de l'historique des mesures et événements.
-    return render_template('history.html')
+    greenhouses = get_all_greenhouses()
+    return render_template('history.html', greenhouses=greenhouses)
 
 
 @pages_bp.route('/settings')
@@ -203,9 +205,131 @@ def greenhouse_detail(gh_id):
     return render_template('greenhouse_detail.html', greenhouse=greenhouse, culture=culture, gh_id=gh_id)
 
 
+@pages_bp.route('/greenhouse/<gh_id>/delete', methods=['GET'])
+def delete_greenhouse_view(gh_id):
+    """
+    Route de suppression d'une serre.
+    Appelée par le bouton '🗑️ Supprimer la Serre' dans greenhouse_detail.html.
+    Supprime la serre et tous ses compartiments de la base SQLite,
+    puis redirige l'utilisateur vers la page des paramètres.
+    """
+    # Supprimer la serre via la fonction du modèle (inclut la suppression des compartiments associés)
+    delete_greenhouse(gh_id)
+    # Rediriger vers les paramètres après suppression réussie
+    return redirect(url_for('pages.settings'))
+
 
 # Routes API JSON utilisées par le frontend JavaScript.
 # Elles ne rendent pas de pages HTML, elles exposent des données et actions REST.
+
+
+@pages_bp.route('/api/greenhouses/<gh_id>/actuate', methods=['POST'])
+def api_actuate_greenhouse(gh_id):
+    """
+    Endpoint API pour envoyer une commande manuelle à un actionneur de la serre.
+    Reçoit un payload JSON avec l'actionneur et l'état souhaité (ex: {'actuator': 'pump', 'action': 'on'}).
+    """
+    payload = request.get_json(force=True, silent=True) or {}
+    actuator = payload.get('actuator')
+    action = payload.get('action')
+
+    if not actuator or not action:
+        return jsonify({'error': 'L\'actionneur et l\'action sont requis'}), 400
+
+    # Valider le type d'actionneur et l'action
+    if actuator not in ['pump', 'cooling'] or action not in ['on', 'off']:
+        return jsonify({'error': 'Actionneur ou action invalide'}), 400
+
+    # Publier la commande MQTT
+    success = publish_actuator_command(gh_id, actuator, action)
+    if not success:
+        return jsonify({'error': 'Échec de l\'envoi de la commande MQTT'}), 500
+
+    # Sauvegarder cet événement d'actionneur manuel dans l'historique SQLite
+    details = f"Actionneur '{actuator.upper()}' mis sur '{action.upper()}' (Manuel)"
+    save_history_event(gh_id, '--', 'actionneur', details)
+
+    return jsonify({
+        'message': f"Commande '{action.upper()}' envoyée avec succès à l'actionneur '{actuator}' de la serre '{gh_id}'."
+    }), 200
+
+@pages_bp.route('/api/history', methods=['GET'])
+def api_get_history():
+    """
+    Récupère le journal d'historique depuis la base de données SQLite.
+    Filtres optionnels passés en paramètres de requête (GET query parameters) :
+    - serre : l'identifiant de la serre (ex: 'S1')
+    - type : le type d'événement ('capteur' ou 'actionneur')
+    - limit : le nombre max de lignes à retourner (défaut: 200)
+    """
+    serre_filter = request.args.get('serre', '').strip()
+    type_filter = request.args.get('type', '').strip()
+    limit_val = request.args.get('limit', '200')
+
+    # Valider la limite pour éviter des injections SQL ou des surcharges
+    try:
+        limit = int(limit_val)
+        if limit <= 0 or limit > 1000:
+            limit = 200
+    except ValueError:
+        limit = 200
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = "SELECT id, date_heure, serre_id, compartiment, type_event, details FROM history_logs"
+    conditions = []
+    params = []
+
+    if serre_filter:
+        conditions.append("serre_id = ?")
+        params.append(serre_filter.upper())
+    
+    if type_filter:
+        conditions.append("type_event = ?")
+        params.append(type_filter)
+
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+
+    # Trier par date décroissante (plus récent d'abord)
+    query += " ORDER BY date_heure DESC LIMIT ?"
+    params.append(limit)
+
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    conn.close()
+
+    logs = []
+    for row in rows:
+        logs.append({
+            'id': row['id'],
+            'date_heure': row['date_heure'],
+            'serre_id': row['serre_id'],
+            'compartiment': row['compartiment'],
+            'type_event': row['type_event'],
+            'details': row['details']
+        })
+
+    return jsonify(logs)
+
+
+@pages_bp.route('/api/history/clear', methods=['POST'])
+def api_clear_history():
+    """
+    Vide complètement le journal d'historique de la base de données SQLite.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM history_logs")
+        conn.commit()
+        conn.close()
+        return jsonify({'message': 'Historique vidé avec succès !'}), 200
+    except Exception as e:
+        print(f"Erreur lors de la suppression de l'historique : {e}")
+        return jsonify({'error': 'Impossible de vider l\'historique.'}), 500
+
 @pages_bp.route('/api/greenhouses', methods=['GET'])
 def api_get_greenhouses():
     return jsonify(get_all_greenhouses())

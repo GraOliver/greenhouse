@@ -128,7 +128,7 @@
 
             <!-- Actions -->
             <div class="action-row">
-                <a id="delete-gh-btn" class="btn-danger" href="{{url_for('pages.delete_greenhouse', gh_id=greenhouse.id)}}" ">🗑️ Supprimer la Serre</a>
+                <a id="delete-gh-btn" class="btn-danger" href="{{ url_for('pages.delete_greenhouse_view', gh_id=greenhouse.id) }}">🗑️ Supprimer la Serre</a>
                 <a href="/settings" class="btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Retour</a>
             </div>
         </div>

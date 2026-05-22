@@ -142,10 +142,9 @@
                 Serre
                 <select id="filter-serre">
                     <option value="">Toutes</option>
-                    <option value="S1">Serre S1</option>
-                    <option value="S2">Serre S2</option>
-                    <option value="S3">Serre S3</option>
-                    <option value="S4">Serre S4</option>
+                    {% for gh in greenhouses %}
+                    <option value="{{ gh.id }}">{{ gh.name }} ({{ gh.id.upper() }})</option>
+                    {% endfor %}
                 </select>
             </label>
 
