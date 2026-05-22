@@ -7,6 +7,7 @@ import json
 import queue
 import time
 from processing.processor import process_raw_sensor_message
+from processing.cache import save_sensor_data_to_cache
 
 # Configuration du broker MQTT
 MQTT_BROKER = 'localhost' # Le IPV de la machine ici nous sommess en locale
@@ -95,6 +96,8 @@ def on_message(client, userdata, msg):
                     'comparison': result.get('comparison', {}),
                     'timestamp': time.time()
                 }
+                # Sauvegarder les données calculées dans le cache JSON pour persistence
+                save_sensor_data_to_cache(gh_id, result)
                 print(f"Données calculées et stockées pour {gh_id} : {result}")
             except Exception as e:
                 print(f"Erreur lors du traitement des données : {e}")

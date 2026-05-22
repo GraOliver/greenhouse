@@ -4,29 +4,43 @@
  * et les mises à jour du graphique de moyennes.
  */
 
-// État global
-let greenhouses = [];
-let selectedId = 'S1';
-let mqttData = {};
-let history = [];
-let chartInstance = null;
-let chartInterval = null;
-let sensorDataPollingInterval = null;  // Pour le polling des données calculées
+// ============================================
+// ÉTAT GLOBAL - Variables persistantes
+// ============================================
 
-// Initialisation
+let greenhouses = [];                          // Liste de toutes les serres
+let selectedId = 'S1';                         // ID de la serre actuellement sélectionnée
+let mqttData = {};                             // Données brutes des capteurs en mémoire (clés: S1C1TA, S1C1TS, etc.)
+let history = [];                              // Historique des moyennes pour le graphique
+let chartInstance = null;                      // Instance du graphique Chart.js
+let chartInterval = null;                      // Intervalle pour mettre à jour le graphique
+let sensorDataPollingInterval = null;          // Intervalle pour récupérer les données calculées toutes les 5s
+
+// ============================================
+// INITIALISATION AU CHARGEMENT DE LA PAGE
+// ============================================
+
 window.addEventListener('DOMContentLoaded', () => {
+    // Récupérer la serre pré-sélectionnée depuis le template (si disponible)
     if (window.INITIAL_SELECTED_GREENHOUSE && window.INITIAL_SELECTED_GREENHOUSE.id) {
         selectedId = window.INITIAL_SELECTED_GREENHOUSE.id;
     }
-    fetchGreenhouses();
-    initSSE();
+    fetchGreenhouses();           // Charger la liste des serres depuis l'API
+    initSSE();                    // Démarrer le flux SSE pour les mises à jour en temps réel
 });
+
+// ============================================
+// RÉCUPÉRATION DES SERRES
+// ============================================
+// Charge la liste de toutes les serres depuis l'API ou depuis les données pré-chargées
 
 async function fetchGreenhouses() {
     try {
+        // Vérifier si les données sont déjà pré-chargées dans la page (template Jinja)
         if (window.INITIAL_GREENHOUSES && Array.isArray(window.INITIAL_GREENHOUSES) && window.INITIAL_GREENHOUSES.length > 0) {
             greenhouses = window.INITIAL_GREENHOUSES;
         } else {
+            // Sinon, récupérer depuis l'API REST
             const response = await fetch('/api/greenhouses');
             if (!response.ok) throw new Error('Erreur API');
             greenhouses = await response.json();
@@ -51,10 +65,15 @@ async function fetchGreenhouses() {
     }
 }
 
+// ============================================
+// RENDU DE LA BARRE DE SÉLECTION DES SERRES
+// ============================================
+// Crée les boutons cliquables pour chaque serre
+
 function renderGreenhouseBar() {
     const greenhouseBar = document.getElementById('greenhouse-bar');
-    greenhouseBar.innerHTML = '';
-    greenhouses.forEach(gh => {
+    greenhouseBar.innerHTML = '';  // Vider le contenu précédent
+    greenhouses.forEach(gh => {    // Pour chaque serre disponible
         const ghItem = document.createElement('div');
         ghItem.className = `gh-item ${selectedId === gh.id ? 'selected' : ''}`;
         ghItem.onclick = () => selectGreenhouse(gh.id);
@@ -66,8 +85,15 @@ function renderGreenhouseBar() {
     });
 }
 
+// ============================================
+// SÉLECTION D'UNE SERRE
+// ============================================
+// Gère le changement de serre sélectionnée et met à jour tous les affichages
+
 async function selectGreenhouse(id) {
-    selectedId = id;
+    selectedId = id;  // Mettre à jour la serre sélectionnée
+    
+    // Mettre à jour la classe CSS "selected" sur les boutons
     document.querySelectorAll('.gh-item').forEach((item, index) => {
         if (greenhouses[index].id === selectedId) {
             item.classList.add('selected');
@@ -76,6 +102,7 @@ async function selectGreenhouse(id) {
         }
     });
 
+    // Mettre à jour le titre et la culture affichés
     const currentGh = greenhouses.find(g => g.id === selectedId);
     if (currentGh) {
         const titleEl = document.getElementById('gh-title');
@@ -84,20 +111,30 @@ async function selectGreenhouse(id) {
         if (cultureEl) cultureEl.textContent = currentGh.culture;
     }
 
-    // Réinitialiser et charger les données
+    // Réinitialiser l'historique et arrêter les anciens intervalles
     history = [];
     if (chartInterval) clearInterval(chartInterval);
-    if (sensorDataPollingInterval) clearInterval(sensorDataPollingInterval);  // Arrêter ancien polling
+    if (sensorDataPollingInterval) clearInterval(sensorDataPollingInterval);
     
+    // Initialiser un nouveau graphique
     initChart();
+    
+    // Charger l'état initial (données fictives/historique)
     await fetchLatestState(selectedId);
     
-    // Démarrer le polling des données calculées (moyennes, comparaison, etc.)
+    // Démarrer le polling des données calculées (moyennes, comparaison avec seuils)
+    // Cette fonction charge d'abord la mémoire, puis le cache JSON si nécessaire
     await fetchSensorCalculations(selectedId);
-    sensorDataPollingInterval = setInterval(() => fetchSensorCalculations(selectedId), 5000);
+    sensorDataPollingInterval = setInterval(() => fetchSensorCalculations(selectedId), 5000);  // Toutes les 5s
     
+    // Mettre à jour le graphique toutes les 2.5s avec les nouvelles données
     chartInterval = setInterval(updateChartData, 2500);
 }
+
+// ============================================
+// CHARGEMENT DE L'ÉTAT INITIAL
+// ============================================
+// Récupère l'état initial et l'historique d'une serre
 
 async function fetchLatestState(ghId) {
     try {
@@ -105,22 +142,27 @@ async function fetchLatestState(ghId) {
         if (!response.ok) throw new Error("Erreur lors de la récupération de l'état");
         const state = await response.json();
         
+        // Remplir le dictionnaire mqttData avec les données des capteurs
         if (state.sensor_data) {
             Object.keys(state.sensor_data).forEach(compId => {
                 const compSensors = state.sensor_data[compId];
                 Object.keys(compSensors).forEach(sensor => {
+                    // Format de clé: S1C1TA, S1C1TS, etc.
                     const key = `${ghId}${compId}${sensor}`;
                     mqttData[key] = compSensors[sensor];
                 });
             });
         }
         
+        // Rafraîchir l'affichage des compartiments
         refreshSensorUI();
         
+        // Mettre à jour les moyennes affichées
         if (state.averages) {
             updateAveragesUI(state.averages);
         }
 
+        // Charger l'historique pour le graphique
         if (state.history && state.history.length > 0) {
             history = state.history.map(h => ({
                 time: h.time,
@@ -129,17 +171,20 @@ async function fetchLatestState(ghId) {
                 HA: h.HA,
                 HS: h.HS
             }));
-            renderChartUI();
+            renderChartUI();  // Mettre à jour le graphique
         }
     } catch (err) {
-        console.warn("⚠️ Impossible de charger l'état initial :", err);
+        console.warn("Impossible de charger l'état initial :", err);
     }
 }
 
-/**
- * Récupère les données calculées (moyennes et comparaisons) depuis l'API.
- * Actualise l'UI avec les moyennes en temps réel.
- */
+// ============================================
+// RÉCUPÉRATION DES DONNÉES CALCULÉES
+// ============================================
+// Charge les données du processor (moyennes par compartiment, comparaisons avec seuils)
+// Priorité: mémoire (mqtt_service) -> cache JSON -> BDD
+// Les données incluent l'historique complet du cache pour alimenter les graphiques
+
 async function fetchSensorCalculations(ghId) {
     try {
         const response = await fetch(`/api/sensor-data/${ghId}`);
@@ -151,8 +196,25 @@ async function fetchSensorCalculations(ghId) {
         const data = await response.json();
         
         // Si des données sont disponibles
-        if (data.computed && data.computed[ghId]) {
+        const compartments = data.compartments || [];
+    const currentGh = greenhouses.find(g => g.id === ghId);
+    if (currentGh && compartments.length) {
+        currentGh.compartments = compartments;
+    }
+    if (data.computed && data.computed[ghId]) {
             const ghData = data.computed[ghId];
+            
+            // Met à jour les valeurs de compartiment connues sans écraser les anciennes valeurs absentes
+            Object.keys(ghData).forEach(compId => {
+                const comp = ghData[compId];
+                ['TA','TS','HA','HS'].forEach(sensor => {
+                    const key = `${ghId}${compId}${sensor}`;
+                    const metric = sensor.toLowerCase();
+                    if (comp[metric] !== null && comp[metric] !== undefined) {
+                        mqttData[key] = comp[metric];
+                    }
+                });
+            });
             
             // Calculer les moyennes par métrique sur tous les compartiments
             let totalTA = 0, totalTS = 0, totalHA = 0, totalHS = 0, count = 0;
@@ -180,53 +242,92 @@ async function fetchSensorCalculations(ghId) {
                 displayDecisions(data.comparison[ghId], ghId);
             }
         }
+
+        // Charger l'historique du cache JSON pour alimenter le graphique
+        // Cela permet de restaurer les données après rafraîchissement de la page
+        if (data.entries && data.entries.length > 0) {
+            history = [];  // Réinitialiser l'historique
+            data.entries.forEach(entry => {
+                if (entry.computed && entry.computed[ghId]) {
+                    const ghData = entry.computed[ghId];
+                    // Calculer la moyenne sur tous les compartiments
+                    let ta = 0, ts = 0, ha = 0, hs = 0, count = 0;
+                    Object.keys(ghData).forEach(compId => {
+                        const comp = ghData[compId];
+                        if (comp.ta !== undefined) ta += comp.ta;
+                        if (comp.ts !== undefined) ts += comp.ts;
+                        if (comp.ha !== undefined) ha += comp.ha;
+                        if (comp.hs !== undefined) hs += comp.hs;
+                        count++;
+                    });
+                    if (count > 0) {
+                        const dt = new Date(entry.datetime);
+                        history.push({
+                            time: dt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+                            TA: ta / count,
+                            TS: ts / count,
+                            HA: ha / count,
+                            HS: hs / count
+                        });
+                    }
+                }
+            });
+            if (history.length > 0) {
+                renderChartUI();  // Mettre à jour le graphique avec l'historique
+            }
+        }
+
+        refreshSensorUI();
     } catch (err) {
         console.warn("⚠️ Impossible de récupérer les données calculées :", err);
     }
 }
 
-/**
- * Affiche les décisions et alertes (si seuils dépassés).
- */
+// ============================================
+// AFFICHAGE DES ALERTES ET DÉCISIONS
+// ============================================
+// Affiche les alertes si les seuils de culture sont dépassés ou si les valeurs
+// sont supérieures à la moyenne historique
+
 function displayDecisions(comparisonData, ghId) {
-    // Pour chaque compartiment, afficher les décisions (alertes, avertissements)
+    // Pour chaque compartiment, afficher les décisions/alertes produites par le processor
     Object.keys(comparisonData).forEach(compId => {
         const comp = comparisonData[compId];
         if (comp.decisions && comp.decisions.length > 0) {
-            // Chercher la carte du compartiment
-            const compCard = document.querySelector(`[data-compartment="${compId}"]`);
+            let compCard = document.querySelector(`[data-compartment="${compId}"]`);
             if (!compCard) {
-                // Si pas encore marquée, on cherche par contenu
                 const allCards = document.querySelectorAll('.compartment-card');
-                const targetCard = Array.from(allCards).find(card => 
+                compCard = Array.from(allCards).find(card => 
                     card.textContent.includes(`Compartiment ${compId}`)
                 );
-                if (targetCard) {
-                    // Ajouter les alertes
-                    let alertsHtml = '';
-                    comp.decisions.forEach(decision => {
-                        alertsHtml += `<div style="background:#fee2e2; color:#991b1b; padding:8px; border-radius:4px; margin-top:8px; font-size:0.85rem;">⚠️ ${decision}</div>`;
-                    });
-                    
-                    // Insérer après le grid des capteurs
-                    const grid = targetCard.querySelector('.sensors-grid');
-                    if (grid) {
-                        const alertContainer = document.createElement('div');
-                        alertContainer.innerHTML = alertsHtml;
-                        grid.parentNode.insertBefore(alertContainer, grid.nextSibling);
-                    }
+            }
+            if (compCard) {
+                let alertsHtml = '';
+                comp.decisions.forEach(decision => {
+                    alertsHtml += `<div style="background:#fee2e2; color:#991b1b; padding:8px; border-radius:4px; margin-top:8px; font-size:0.85rem;">⚠️ ${decision}</div>`;
+                });
+                const grid = compCard.querySelector('.sensors-grid');
+                if (grid) {
+                    const alertContainer = document.createElement('div');
+                    alertContainer.innerHTML = alertsHtml;
+                    grid.parentNode.insertBefore(alertContainer, grid.nextSibling);
                 }
             }
         }
     });
 }
 
+// ============================================
+// INITIALISATION DU GRAPHIQUE
+// ============================================
+// Crée une nouvelle instance Chart.js avec 4 lignes (TA, TS, HA, HS)
+
 function initChart() {
     const chartEl = document.getElementById('sensorChart');
     if (!chartEl) return;
     const ctx = chartEl.getContext('2d');
     if (chartInstance) {
-        chartInstance.destroy();
+        chartInstance.destroy();  // Détruire le graphique précédent
     }
     chartInstance = new Chart(ctx, {
         type: 'line',
@@ -272,17 +373,24 @@ function initChart() {
     });
 }
 
+// ============================================
+// RAFRAÎCHISSEMENT DE L'AFFICHAGE DES COMPARTIMENTS
+// ============================================
+// Crée/met à jour les cartes de chaque compartiment avec les données actuelles
+
 function refreshSensorUI() {
     const currentGh = greenhouses.find(g => g.id === selectedId);
     const comps = currentGh && currentGh.compartments ? currentGh.compartments : [];
     
     const compartmentsContainer = document.getElementById('compartments-container');
     if (!compartmentsContainer) return;
-    compartmentsContainer.innerHTML = '';
+    compartmentsContainer.innerHTML = '';  // Vider les anciennes cartes
     
+    // Créer une carte pour chaque compartiment
     comps.forEach(compId => {
         const card = document.createElement('article');
         card.className = 'card compartment-card';
+        card.dataset.compartment = compId;
         
         const getVal = (sensor) => {
             const key = `${selectedId}${compId}${sensor}`;
@@ -330,33 +438,53 @@ function refreshSensorUI() {
     });
 }
 
+// ============================================
+// MISE À JOUR DES MOYENNES AFFICHÉES
+// ============================================
+// Mets à jour les 4 valeurs moyennes (TA, TS, HA, HS) en haut du dashboard
+
 function updateAveragesUI(msg) {
+    // Récupérer les éléments DOM pour chaque moyenne
     const avgTA = document.getElementById('avg-TA');
     const avgTS = document.getElementById('avg-TS');
     const avgHA = document.getElementById('avg-HA');
     const avgHS = document.getElementById('avg-HS');
 
+    // Mettre à jour le texte (ou "--" si pas de donnée)
     if (avgTA) avgTA.textContent = msg.TA !== undefined ? msg.TA : '--';
     if (avgTS) avgTS.textContent = msg.TS !== undefined ? msg.TS : '--';
     if (avgHA) avgHA.textContent = msg.HA !== undefined ? msg.HA : '--';
     if (avgHS) avgHS.textContent = msg.HS !== undefined ? msg.HS : '--';
 }
 
+// ============================================
+// RENDU DU GRAPHIQUE
+// ============================================
+// Met à jour le graphique avec les nouvelles données historiques
+
 function renderChartUI() {
     if (chartInstance) {
+        // Mettre à jour les labels (heures) et les 4 lignes de données
         chartInstance.data.labels = history.map(h => h.time);
-        chartInstance.data.datasets[0].data = history.map(h => h.TA);
-        chartInstance.data.datasets[1].data = history.map(h => h.TS);
-        chartInstance.data.datasets[2].data = history.map(h => h.HA);
-        chartInstance.data.datasets[3].data = history.map(h => h.HS);
-        chartInstance.update();
+        chartInstance.data.datasets[0].data = history.map(h => h.TA);  // Température air
+        chartInstance.data.datasets[1].data = history.map(h => h.TS);  // Température sol
+        chartInstance.data.datasets[2].data = history.map(h => h.HA);  // Humidité air
+        chartInstance.data.datasets[3].data = history.map(h => h.HS);  // Humidité sol
+        chartInstance.update();  // Redessiner le graphique
     }
 }
+
+// ============================================
+// MISE À JOUR PÉRIODIQUE DU GRAPHIQUE
+// ============================================
+// Ajoute un nouveau point à l'historique en calculant la moyenne actuelle
+// Garder seulement les 20 derniers points pour fluidité
 
 function updateChartData() {
     const currentGh = greenhouses.find(g => g.id === selectedId);
     const comps = currentGh && currentGh.compartments ? currentGh.compartments : [];
     
+    // Accumuler les valeurs de tous les compartiments
     let TA = 0, TS = 0, HA = 0, HS = 0, count = 0;
     comps.forEach(compId => {
         const keyTA = `${selectedId}${compId}TA`;
@@ -364,6 +492,7 @@ function updateChartData() {
         const keyHA = `${selectedId}${compId}HA`;
         const keyHS = `${selectedId}${compId}HS`;
         
+        // Si la donnée est disponible, l'ajouter à la somme
         if (mqttData[keyTA] !== undefined) {
             TA += parseFloat(mqttData[keyTA]);
             TS += parseFloat(mqttData[keyTS]);
@@ -376,8 +505,10 @@ function updateChartData() {
     let pt;
     const timeStr = new Date().toLocaleTimeString();
     if (count > 0) {
+        // Calculer la moyenne et ajouter le point
         pt = { time: timeStr, TA: TA / count, TS: TS / count, HA: HA / count, HS: HS / count };
     } else {
+        // Si pas de données réelles, générer des données fictives (fallback)
         pt = { 
             time: timeStr, 
             TA: 26 + Math.random() * 2, 
@@ -387,18 +518,27 @@ function updateChartData() {
         };
     }
 
+    // Ajouter le nouveau point et garder seulement les 20 derniers
     history.push(pt);
     if (history.length > 20) {
-        history.shift();
+        history.shift();  // Supprimer le point le plus ancien
     }
 
+    // Redessiner le graphique avec le nouvel historique
     renderChartUI();
 }
+
+// ============================================
+// INITIALISATION DU FLUX SSE (Server-Sent Events)
+// ============================================
+// Établit une connexion persistante pour recevoir les mises à jour en temps réel du serveur
+// Le flux SSE complémente le polling : il permet de recevoir les données dès qu'elles sont disponibles
 
 function initSSE() {
     console.log("Connexion au flux SSE...");
     const eventSource = new EventSource('/api/stream');
 
+    // Traiter chaque message reçu du flux SSE
     eventSource.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data);
@@ -423,7 +563,9 @@ function initSSE() {
         }
     };
 
+    // Gestion des erreurs de connexion SSE
     eventSource.onerror = (err) => {
         console.error("Erreur SSE:", err);
+        // La connexion SSE se rétablira automatiquement après quelques secondes
     };
 }
