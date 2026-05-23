@@ -14,7 +14,12 @@ import unicodedata
 from flask import Blueprint, Response, render_template, request, stream_with_context, jsonify, redirect, url_for
 
 from services.mqtt_service import publish_actuator_command
-from models.database import get_db_connection, save_history_event
+from models.database import (
+    get_db_connection, 
+    save_history_event, 
+    get_active_alerts, 
+    resolve_alert
+)
 from models.greenhouse import (
     add_compartment,
     create_greenhouse,
@@ -472,3 +477,29 @@ def api_sensor_data(gh_id):
         response['entries'] = cache_entries
 
     return jsonify(response)
+
+
+# ==========================================
+# ROUTES API POUR LES ALERTES GLOBALES
+# ==========================================
+
+@pages_bp.route('/api/alerts', methods=['GET'])
+def api_get_alerts():
+    """
+    Récupère toutes les alertes actives.
+    On peut filtrer par serre avec le paramètre ?serre_id=S1
+    """
+    serre_id = request.args.get('serre_id')
+    alerts = get_active_alerts(serre_id)
+    return jsonify(alerts), 200
+
+@pages_bp.route('/api/alerts/<int:alert_id>/resolve', methods=['POST'])
+def api_resolve_alert(alert_id):
+    """
+    Marque une alerte comme résolue manuellement par l'utilisateur.
+    """
+    success = resolve_alert(alert_id)
+    if success:
+        return jsonify({'message': 'Alerte résolue avec succès'}), 200
+    else:
+        return jsonify({'error': 'Impossible de résoudre l\'alerte'}), 500

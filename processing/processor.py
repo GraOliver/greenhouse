@@ -12,7 +12,11 @@ Les fonctions incluent des commentaires en français comme demandé.
 """
 
 from typing import List, Dict, Any, Optional
-from models.database import get_db_connection
+from models.database import get_db_connection, create_alert, auto_resolve_alerts
+
+# Variable globale pour stocker la dernière mesure connue de chaque compartiment
+# Format: { 'S1': { 'C1': {'ta': 20.0, 'ts': 18.0}, 'C2': {'ta': 21.0, ...} } }
+LATEST_COMPARTMENT_DATA = {}
 
 
 def normalize_ids(ids) -> List[str]:
@@ -104,7 +108,7 @@ def get_culture_thresholds_for_serre(serre_nom: str) -> Dict[str, Optional[float
     culture_id = row[0]
 
     cur.execute(
-        "SELECT temperature_air_min, temperature_air_max, temperature_sol_min, temperature_sol_max, humidite_air_min, humidite_air_max, humidite_sol_min, humidite_sol_max FROM cultures WHERE id = ?",
+        "SELECT temperature_air_min, temperature_air_max, temperature_sol_min, temperature_sol_max, humidite_air_min, humidite_air_max, humidite_sol_min, humidite_sol_max FROM cultures WHERE nom = ?",
         (culture_id,)
     )
     c = cur.fetchone()
@@ -119,64 +123,92 @@ def get_culture_thresholds_for_serre(serre_nom: str) -> Dict[str, Optional[float
     }
 
 
-def compare_with_db(averages: Dict[str, Dict[str, Optional[float]]]) -> Dict[str, Any]:
-    """Compare les moyennes calculées avec l'historique en BDD et les seuils de culture.
+def compare_with_db(global_averages: Dict[str, Dict[str, Optional[float]]]) -> Dict[str, Any]:
+    """Compare la moyenne GLOBALE de la serre avec l'historique en BDD et les seuils de culture.
 
-    `averages` attend un dict de la forme : { 'S1': { 'C1': {'ta':val,...}, ... }, ... }
+    `global_averages` attend un dict de la forme : { 'S1': {'ta':val, 'ts':val, ...}, ... }
 
-    Retourne un dict structuré contenant les historiques et les décisions recommandées.
+    Retourne un dict structuré contenant les historiques et les décisions/alertes recommandées.
     """
     results = {}
-    for serre_nom, comps in averages.items():
+    for serre_nom, metrics in global_averages.items():
         results[serre_nom] = {}
         # récupère seuils culture
         thresholds = get_culture_thresholds_for_serre(serre_nom)
-        for comp, metrics in comps.items():
-            hist = fetch_historical_averages(serre_nom)
-            decisions = []
-            # Pour chaque métrique, comparer valeur actuelle, historique et seuils
-            for key, label in (("ta", "temperature_air"), ("ts", "temperature_sol"), ("ha", "humidite_air"), ("hs", "humidite_sol")):
-                cur_val = metrics.get(key)
-                hist_val = hist.get(key)
-                # comparaison avec historique
-                if cur_val is None:
-                    continue
-                if hist_val is not None and cur_val > hist_val:
-                    decisions.append(f"{serre_nom}/{comp}: {key} supérieur moyenne historique ({cur_val:.2f} > {hist_val:.2f})")
-                # comparaison avec seuils culture si disponibles
-                min_key = f"{key}_min"
-                max_key = f"{key}_max"
-                if thresholds.get(min_key) is not None and thresholds.get(max_key) is not None:
-                    if cur_val < thresholds[min_key]:
-                        decisions.append(f"{serre_nom}/{comp}: {key} inférieur au seuil min ({cur_val:.2f} < {thresholds[min_key]:.2f})")
-                    if cur_val > thresholds[max_key]:
-                        decisions.append(f"{serre_nom}/{comp}: {key} supérieur au seuil max ({cur_val:.2f} > {thresholds[max_key]:.2f})")
+        hist = fetch_historical_averages(serre_nom)
+        decisions = []
+        
+        # Pour chaque métrique, comparer valeur actuelle, historique et seuils
+        for key, label in (("ta", "temperature_air"), ("ts", "temperature_sol"), ("ha", "humidite_air"), ("hs", "humidite_sol")):
+            cur_val = metrics.get(key)
+            hist_val = hist.get(key)
+            
+            # comparaison avec historique
+            if cur_val is None:
+                continue
+            if hist_val is not None and cur_val > hist_val:
+                decisions.append(f"{serre_nom}: {key} supérieur moyenne historique ({cur_val:.2f} > {hist_val:.2f})")
+            
+            # comparaison avec seuils culture si disponibles
+            min_key = f"{key}_min"
+            max_key = f"{key}_max"
+            
+            # Si nous avons des seuils pour cette métrique
+            if thresholds.get(min_key) is not None and thresholds.get(max_key) is not None:
+                is_alert = False
+                
+                # Import local pour éviter l'import circulaire avec mqtt_service
+                from services.mqtt_service import publish_actuator_command
+                
+                if cur_val < thresholds[min_key]:
+                    msg = f"La moyenne globale de {label} est trop basse ({cur_val:.1f} < {thresholds[min_key]:.1f})"
+                    decisions.append(f"{serre_nom}: {key} inférieur au seuil min")
+                    
+                    if create_alert(serre_nom, key, msg):
+                        # Action automatique si nouvelle alerte créée
+                        if key == 'hs':  # Humidité sol basse = allumer pompe
+                            publish_actuator_command(serre_nom, 'pump', 'on')
+                    is_alert = True
+                
+                elif cur_val > thresholds[max_key]:
+                    msg = f"La moyenne globale de {label} est trop haute ({cur_val:.1f} > {thresholds[max_key]:.1f})"
+                    decisions.append(f"{serre_nom}: {key} supérieur au seuil max")
+                    
+                    if create_alert(serre_nom, key, msg):
+                        # Action automatique si nouvelle alerte créée
+                        if key == 'ta':  # Température air haute = allumer ventilateur
+                            publish_actuator_command(serre_nom, 'cooling', 'on')
+                        elif key == 'ts': # Température sol haute = allumer pompe (arrosage) pour rafraîchir
+                            publish_actuator_command(serre_nom, 'pump', 'on')
+                    is_alert = True
+                
+                # Si aucune alerte sur cette métrique (valeur normale), on tente une auto-résolution
+                if not is_alert:
+                    if auto_resolve_alerts(serre_nom, key):
+                        # Si une alerte vient d'être résolue, on éteint l'actionneur correspondant
+                        if key == 'ta':
+                            publish_actuator_command(serre_nom, 'cooling', 'off')
+                        elif key == 'hs' or key == 'ts':
+                            publish_actuator_command(serre_nom, 'pump', 'off')
 
-            results[serre_nom][comp] = {
-                "current": metrics,
-                "historical": hist,
-                "thresholds": thresholds,
-                "decisions": decisions,
-            }
+        results[serre_nom] = {
+            "current": metrics,
+            "historical": hist,
+            "thresholds": thresholds,
+            "decisions": decisions,
+        }
     return results
 
 
 def process_raw_sensor_message(gh_id, comp_id, data):
-    """Traite un message de capteur et renvoie les moyennes et comparaisons.
+    """Traite un message de capteur et renvoie la moyenne globale et comparaisons.
 
-    - `gh_id` peut être une chaîne 'S1,S2' ou une liste. Même chose pour `comp_id`.
-    - `data` est un dict contenant au moins les clés `ta`, `ts`, `ha`, `hs`.
-
-    La fonction calcule la moyenne pour chaque métrique (si la valeur fournie
-    est une liste, on prend la moyenne de la liste; si c'est une valeur simple,
-    la moyenne est cette valeur). Puis elle compare avec les données historiques
-    en base et produit des recommandations.
+    - Met à jour la dernière valeur connue pour le compartiment.
+    - Calcule la moyenne globale de la serre (tous compartiments confondus).
+    - Compare la moyenne globale avec les seuils de culture pour générer des alertes.
     """
     gh_list = normalize_ids(gh_id)
     comp_list = normalize_ids(comp_id)
-
-    # Structure: { 'S1': { 'C1': {'ta':..,'ts':..,'ha':..,'hs':..}, ... }, ... }
-    computed: Dict[str, Dict[str, Dict[str, Optional[float]]]] = {}
 
     # Si aucune serre/comp fournie, on tente d'utiliser des valeurs par défaut
     if not gh_list:
@@ -184,10 +216,14 @@ def process_raw_sensor_message(gh_id, comp_id, data):
     if not comp_list:
         comp_list = ["C1"]
 
+    global LATEST_COMPARTMENT_DATA
+
     for gh in gh_list:
-        computed.setdefault(gh, {})
+        if gh not in LATEST_COMPARTMENT_DATA:
+            LATEST_COMPARTMENT_DATA[gh] = {}
+            
         for comp in comp_list:
-            # calcule la moyenne pour chaque métrique - accepte list ou scalar
+            # calcule la moyenne pour chaque métrique de ce compartiment spécifique
             metrics = {}
             for k in ("ta", "ts", "ha", "hs"):
                 v = data.get(k)
@@ -196,18 +232,43 @@ def process_raw_sensor_message(gh_id, comp_id, data):
                 elif isinstance(v, (int, float)):
                     metrics[k] = float(v)
                 else:
-                    # essayer de convertir une chaîne numérique
                     try:
                         metrics[k] = float(v)
                     except Exception:
                         metrics[k] = None
-            computed[gh][comp] = metrics
+                        
+            # Enregistrer la dernière valeur pour ce compartiment
+            LATEST_COMPARTMENT_DATA[gh][comp] = metrics
 
-    # Compare avec BDD et retourne une structure détaillée
-    comparison = compare_with_db(computed)
+    # Calculer la MOYENNE GLOBALE pour chaque serre modifiée
+    global_computed = {}
+    for gh in gh_list:
+        all_comps = LATEST_COMPARTMENT_DATA[gh]
+        gh_metrics = {"ta": [], "ts": [], "ha": [], "hs": []}
+        
+        # Récolter les valeurs de tous les compartiments de cette serre
+        for c, m in all_comps.items():
+            for k in gh_metrics.keys():
+                if m.get(k) is not None:
+                    gh_metrics[k].append(m[k])
+                    
+        # Faire la moyenne globale
+        global_computed[gh] = {
+            "ta": calc_average(gh_metrics["ta"]),
+            "ts": calc_average(gh_metrics["ts"]),
+            "ha": calc_average(gh_metrics["ha"]),
+            "hs": calc_average(gh_metrics["hs"])
+        }
+
+    # Compare la moyenne globale avec la BDD (et génère des alertes globales)
+    comparison = compare_with_db(global_computed)
 
     # Log pour debug
-    print(f"Computed averages: {computed}")
+    print(f"Global computed averages: {global_computed}")
     print(f"Comparison results: {comparison}")
 
-    return {"computed": computed, "comparison": comparison}
+    # Pour garder la compatibilité avec le reste du code qui s'attend
+    # à un dictionnaire de type {'computed': {'S1': {'C1': {...}, 'C2': {...}}}}
+    # on renvoie LATEST_COMPARTMENT_DATA comme 'computed' pour le dashboard,
+    # MAIS la 'comparison' contient maintenant la logique de la moyenne globale.
+    return {"computed": {gh: LATEST_COMPARTMENT_DATA[gh] for gh in gh_list}, "comparison": comparison}

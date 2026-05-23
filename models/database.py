@@ -110,6 +110,18 @@ def create_tables():
         )
     ''')
 
+    # Table pour stocker les alertes globales de la serre
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS alerts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            serre_id TEXT NOT NULL,
+            metrique TEXT NOT NULL,
+            message TEXT NOT NULL,
+            date_heure DATETIME DEFAULT CURRENT_TIMESTAMP,
+            statut TEXT DEFAULT 'active'
+        )
+    ''')
+
     conn.commit()
     conn.close()
 
@@ -206,4 +218,124 @@ def save_history_event(serre_id, compartiment, type_event, details):
         return True
     except Exception as e:
         print(f"Erreur lors de la sauvegarde de l'historique dans SQLite : {e}")
+        return False
+
+
+# ==========================================
+# FONCTIONS DE GESTION DES ALERTES GLOBALES
+# ==========================================
+
+def create_alert(serre_id, metrique, message):
+    """
+    Crée une nouvelle alerte dans la base de données.
+    Vérifie d'abord si une alerte 'active' existe déjà pour cette serre et cette métrique
+    pour éviter de spammer la base de données (système de cooldown).
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Vérification anti-spam : y a-t-il déjà une alerte active pour cette serre et cette métrique ?
+        cursor.execute(
+            "SELECT id FROM alerts WHERE serre_id = ? AND metrique = ? AND statut = 'active'",
+            (serre_id.upper(), metrique)
+        )
+        if cursor.fetchone():
+            conn.close()
+            return False # L'alerte existe déjà, on ne fait rien
+            
+        # Création de la nouvelle alerte
+        cursor.execute(
+            "INSERT INTO alerts (serre_id, metrique, message) VALUES (?, ?, ?)",
+            (serre_id.upper(), metrique, message)
+        )
+        conn.commit()
+        conn.close()
+        
+        # Enregistrer aussi dans l'historique général pour la traçabilité
+        save_history_event(serre_id, 'GLOBAL', 'alerte', message)
+        return True
+    except Exception as e:
+        print(f"Erreur lors de la création de l'alerte : {e}")
+        return False
+
+def get_active_alerts(serre_id=None):
+    """
+    Récupère la liste des alertes actives.
+    Si serre_id est fourni, filtre par serre.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        query = "SELECT id, serre_id, metrique, message, date_heure FROM alerts WHERE statut = 'active'"
+        params = []
+        
+        if serre_id:
+            query += " AND serre_id = ?"
+            params.append(serre_id.upper())
+            
+        query += " ORDER BY date_heure DESC"
+        
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+        conn.close()
+        
+        return [dict(row) for row in rows]
+    except Exception as e:
+        print(f"Erreur lors de la récupération des alertes actives : {e}")
+        return []
+
+def resolve_alert(alert_id):
+    """
+    Marque une alerte spécifique comme résolue (acquittement manuel).
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE alerts SET statut = 'resolue' WHERE id = ?",
+            (alert_id,)
+        )
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"Erreur lors de la résolution de l'alerte {alert_id} : {e}")
+        return False
+
+def auto_resolve_alerts(serre_id, metrique):
+    """
+    Ferme automatiquement les alertes actives pour une serre et une métrique donnée
+    lorsque les valeurs reviennent à la normale.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # On vérifie s'il y a des alertes à résoudre
+        cursor.execute(
+            "SELECT id FROM alerts WHERE serre_id = ? AND metrique = ? AND statut = 'active'",
+            (serre_id.upper(), metrique)
+        )
+        alertes_a_fermer = cursor.fetchall()
+        
+        if alertes_a_fermer:
+            # On met à jour le statut
+            cursor.execute(
+                "UPDATE alerts SET statut = 'resolue' WHERE serre_id = ? AND metrique = ? AND statut = 'active'",
+                (serre_id.upper(), metrique)
+            )
+            conn.commit()
+            conn.close()
+            
+            # Enregistrer la résolution automatique dans l'historique
+            message = f"Alerte auto-résolue pour {metrique} (retour à la normale)."
+            save_history_event(serre_id, 'GLOBAL', 'alerte_resolue', message)
+            return True
+            
+        conn.close()
+        return False
+    except Exception as e:
+        print(f"Erreur lors de l'auto-résolution des alertes : {e}")
         return False

@@ -8,6 +8,7 @@ import queue
 import time
 from processing.processor import process_raw_sensor_message
 from processing.cache import save_sensor_data_to_cache
+from models.database import save_history_event
 
 # Configuration du broker MQTT
 MQTT_BROKER = 'localhost' # Le IPV de la machine ici nous sommess en locale
@@ -114,6 +115,15 @@ def on_message(client, userdata, msg):
                 }
                 # Sauvegarder les données calculées dans le cache JSON pour persistence
                 save_sensor_data_to_cache(gh_id, result)
+                
+                # Enregistrer les données capteur dans l'historique immédiatement
+                raw_data = data['raw'] if 'raw' in data else data
+                if isinstance(raw_data, dict):
+                    details = f"Mesure capteur: TA={raw_data.get('ta')}°C, TS={raw_data.get('ts')}°C, HA={raw_data.get('ha')}%, HS={raw_data.get('hs')}%"
+                else:
+                    details = f"Mesure capteur: {raw_data}"
+                save_history_event(gh_id, comp_id, 'capteur', details)
+                
                 print(f"Données calculées et stockées pour {gh_id} : {result}")
             except Exception as e:
                 print(f"Erreur lors du traitement des données : {e}")

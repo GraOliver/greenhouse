@@ -99,11 +99,17 @@
 {% endblock %}
 
 {% block scripts %}
+<script id="initial-data" type="application/json">
+{
+  "greenhouses": {{ greenhouses|tojson|safe }},
+  "selectedGreenhouse": {{ selected_greenhouse|tojson|safe }}
+}
+</script>
 <script>
-    // Données initiales chargées par Flask depuis la page.
-    window.INITIAL_GREENHOUSES = {{ greenhouses|tojson }};
-    window.INITIAL_SELECTED_GREENHOUSE = {{ selected_greenhouse|tojson }};
+    // Charger les données depuis le JSON
+    const initialData = JSON.parse(document.getElementById('initial-data').textContent);
+    window.INITIAL_GREENHOUSES = initialData.greenhouses;
+    window.INITIAL_SELECTED_GREENHOUSE = initialData.selectedGreenhouse;
 </script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock %}
-

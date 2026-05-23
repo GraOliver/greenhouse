@@ -455,6 +455,12 @@ function updateAveragesUI(msg) {
     if (avgTS) avgTS.textContent = msg.TS !== undefined ? msg.TS : '--';
     if (avgHA) avgHA.textContent = msg.HA !== undefined ? msg.HA : '--';
     if (avgHS) avgHS.textContent = msg.HS !== undefined ? msg.HS : '--';
+    
+    // Masquer le message "En attente des données..." dès que les données arrivent
+    const sensorStatus = document.getElementById('sensor-status');
+    if (sensorStatus && (msg.TA !== undefined || msg.TS !== undefined || msg.HA !== undefined || msg.HS !== undefined)) {
+        sensorStatus.style.display = 'none';
+    }
 }
 
 // ============================================

@@ -17,11 +17,29 @@
                 <p class="eyebrow">Nsele</p>
                 <h2>{% block header_title %}Serre connectée{% endblock %}</h2>
             </div>
-            <nav>
+            <nav style="display: flex; align-items: center;">
                 <a href="/" {% if request.path == '/' %}style="text-decoration: underline; color: white;"{% endif %}>Dashboard</a>
                 <a href="/commande" {% if request.path == '/commande' %}style="text-decoration: underline; color: white;"{% endif %}>Commandes</a>
                 <a href="/history" {% if request.path == '/history' %}style="text-decoration: underline; color: white;"{% endif %}>Historique</a>
                 <a href="/settings" {% if request.path == '/settings' %}style="text-decoration: underline; color: white;"{% endif %}>Paramètres</a>
+                
+                <!-- Cloche de notification globale -->
+                <div class="notification-container">
+                    <button id="alert-bell" class="notification-bell">
+                        🔔
+                        <span id="alert-badge" class="notification-badge">0</span>
+                    </button>
+                    <div id="alert-dropdown" class="alerts-dropdown">
+                        <div class="alerts-header">
+                            <span>Alertes de la serre</span>
+                            <small id="alert-count-text">0 active</small>
+                        </div>
+                        <ul id="alert-list" class="alerts-list">
+                            <!-- Les alertes seront injectées ici par JS -->
+                            <div class="no-alerts">Aucune alerte active. Tout va bien ! 🌱</div>
+                        </ul>
+                    </div>
+                </div>
             </nav>
         </header>
 
@@ -36,5 +54,84 @@
     
     <!-- Scripts personnalisés -->
     {% block scripts %}{% endblock %}
+
+    <!-- Script de gestion globale des alertes -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const bellBtn = document.getElementById('alert-bell');
+            const dropdown = document.getElementById('alert-dropdown');
+            const badge = document.getElementById('alert-badge');
+            const list = document.getElementById('alert-list');
+            const countText = document.getElementById('alert-count-text');
+            
+            // Toggle dropdown
+            bellBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('show');
+            });
+            
+            // Fermer si on clique ailleurs
+            document.addEventListener('click', (e) => {
+                if (!bellBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+
+            // Fonction pour acquitter (résoudre) une alerte
+            window.resolveAlert = async function(alertId) {
+                try {
+                    const res = await fetch(`/api/alerts/${alertId}/resolve`, { method: 'POST' });
+                    if(res.ok) {
+                        fetchAlerts(); // Recharger les alertes
+                    }
+                } catch(e) {
+                    console.error("Erreur lors de la résolution:", e);
+                }
+            };
+
+            // Fonction pour récupérer les alertes depuis l'API
+            async function fetchAlerts() {
+                try {
+                    const response = await fetch('/api/alerts');
+                    if (!response.ok) return;
+                    
+                    const alerts = await response.json();
+                    const count = alerts.length;
+                    
+                    // Mettre à jour le badge
+                    if (count > 0) {
+                        badge.textContent = count;
+                        badge.style.display = 'block';
+                        // Faire vibrer la cloche si nouvelles alertes (optionnel)
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                    
+                    countText.textContent = `${count} active${count > 1 ? 's' : ''}`;
+                    
+                    // Mettre à jour la liste HTML
+                    if (count === 0) {
+                        list.innerHTML = '<div class="no-alerts">Aucune alerte active. Tout va bien ! 🌱</div>';
+                    } else {
+                        list.innerHTML = alerts.map(a => `
+                            <li class="alert-item">
+                                <p><strong>${a.serre_id}</strong> : ${a.message}</p>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                                    <small>${new Date(a.date_heure).toLocaleString()}</small>
+                                    <button class="btn-resolve" onclick="resolveAlert(${a.id})">✅ Résoudre</button>
+                                </div>
+                            </li>
+                        `).join('');
+                    }
+                } catch(e) {
+                    console.error("Erreur fetch alerts:", e);
+                }
+            }
+
+            // Récupérer les alertes au chargement, puis toutes les 5 secondes
+            fetchAlerts();
+            setInterval(fetchAlerts, 5000);
+        });
+    </script>
 </body>
 </html>
