@@ -164,14 +164,14 @@ def settings_save_culture():
 
 
 @pages_bp.route('/settings/greenhouse', methods=['POST'])
-def settings_create_greenhouse():
+def settings_create_greenhouse():   # Route pour créer une nouvelle serre depuis la page de paramètres.
     form = request.form
     gh_name = form.get('gh-name-input', '').strip()
     gh_desc = form.get('gh-description-input', '').strip()
     culture_id = form.get('gh-culture-select', '').strip()
 
     if gh_name and culture_id:
-        gh_id = slugify(gh_name)
+        gh_id = slugify(gh_name).upper()
         create_greenhouse(gh_id, gh_desc or gh_name, culture_id)
 
     return redirect(url_for('pages.settings'))
@@ -179,6 +179,7 @@ def settings_create_greenhouse():
 
 @pages_bp.route('/settings/assign-culture', methods=['POST'])
 def settings_assign_culture():
+    print(f"information setting {form.request}")
     form = request.form
     greenhouse_id = form.get('assign-gh-select', '').strip()
     culture_id = form.get('assign-culture-select', '').strip()
@@ -345,6 +346,7 @@ def api_create_greenhouse():
     if not gh_id or not name or not culture_id:
         return jsonify({'error': 'id, name et culture sont requis'}), 400
 
+    gh_id = slugify(gh_id).upper()
     greenhouse = create_greenhouse(gh_id, name, culture_id)
     if greenhouse is None:
         return jsonify({'error': 'Une serre portant ce nom existe déjà'}), 409

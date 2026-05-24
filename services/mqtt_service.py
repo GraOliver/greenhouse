@@ -11,7 +11,7 @@ from processing.cache import save_sensor_data_to_cache
 from models.database import save_history_event
 
 # Configuration du broker MQTT
-MQTT_BROKER = 'localhost' # Le IPV de la machine ici nous sommess en locale
+MQTT_BROKER = '192.168.1.173' # Le IPV de la machine ici nous sommess en locale
 MQTT_PORT = 1883
 client = mqtt.Client() # creation client
 
@@ -95,42 +95,40 @@ def on_message(client, userdata, msg):
         data = {'raw': msg.payload.decode()}
 
     # Traiter les données brutes des capteurs
-    if msg.topic.startswith('nsele/raw_sensor/'):
-        parts = msg.topic.split('/')
-        if len(parts) >= 4:
-            gh_id = parts[2]  # ID de la serre
-            comp_id = parts[3]  # ID du compartiment
-            print(f" {data['raw'] if 'raw' in data else data}\n")
+    # if msg.topic.startswith('nsele/raw_sensor/'):
+    parts = msg.topic.split('/')
+    if len(parts) >= 4:
+        gh_id = parts[2]  # ID de la serre
+        comp_id = parts[3]  # ID du compartiment
             
             # Appeler le processor pour calculer moyennes et comparaison
-            try:
-                result = process_raw_sensor_message(gh_id, comp_id, data['raw'] if 'raw' in data else data)
-                # Stocker le résultat pour accès futur (via API)
-                if gh_id not in sensor_data_store:
-                    sensor_data_store[gh_id] = {}
-                sensor_data_store[gh_id] = {
-                    'computed': result.get('computed', {}),
-                    'comparison': result.get('comparison', {}),
-                    'timestamp': time.time()
+        try:
+            result = process_raw_sensor_message(gh_id, comp_id, data['raw'] if 'raw' in data else data)
+            # Stocker le résultat pour accès futur (via API)
+            if gh_id not in sensor_data_store:
+                sensor_data_store[gh_id] = {}
+            sensor_data_store[gh_id] = {
+                'computed': result.get('computed', {}),
+                'comparison': result.get('comparison', {}),
+                'timestamp': time.time()
                 }
-                # Sauvegarder les données calculées dans le cache JSON pour persistence
-                save_sensor_data_to_cache(gh_id, result)
+            # Sauvegarder les données calculées dans le cache JSON pour persistence
+            save_sensor_data_to_cache(gh_id, result)
                 
-                # Enregistrer les données capteur dans l'historique immédiatement
-                raw_data = data['raw'] if 'raw' in data else data
-                if isinstance(raw_data, dict):
-                    details = f"Mesure capteur: TA={raw_data.get('ta')}°C, TS={raw_data.get('ts')}°C, HA={raw_data.get('ha')}%, HS={raw_data.get('hs')}%"
-                else:
-                    details = f"Mesure capteur: {raw_data}"
-                save_history_event(gh_id, comp_id, 'capteur', details)
-                
-                print(f"Données calculées et stockées pour {gh_id} : {result}")
-            except Exception as e:
-                print(f"Erreur lors du traitement des données : {e}")
+            # Enregistrer les données capteur dans l'historique immédiatement
+            raw_data = data['raw'] if 'raw' in data else data
+            if isinstance(raw_data, dict):
+                details = f"Mesure capteur: TA={raw_data.get('ta')}°C, TS={raw_data.get('ts')}°C, HA={raw_data.get('ha')}%, HS={raw_data.get('hs')}%"
+            else:
+                details = f"Mesure capteur: {raw_data}"
+            save_history_event(gh_id, comp_id, 'capteur', details)
+
+        except Exception as e:
+            print(f"Erreur lors du traitement des données : {e}")
             
-        else:
-            print(f"Format de topic inattendu : {msg.topic}. Attendu 'nsele/raw_sensor/<gh_id>/<comp_id>'.")
-            return
+    else:
+        print(f"Format de topic inattendu : {msg.topic}. Attendu 'nsele/raw_sensor/<gh_id>/<comp_id>'.")
+        return
 
     
     # Diffuser les données à tous les clients SSE connectés
