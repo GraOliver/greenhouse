@@ -54,6 +54,9 @@ def calc_average(values: List[float]) -> Optional[float]:
     return sum(nums) / len(nums)
 
 
+
+
+
 def fetch_historical_averages(serre_nom: str, limit: int = 20) -> Dict[str, Optional[float]]:
     """Récupère les moyennes historiques à partir des dernières `limit` mesures pour une serre.
 
@@ -260,13 +263,17 @@ def process_raw_sensor_message(gh_id, comp_id, data):
             for k in gh_metrics.keys():
                 if m.get(k) is not None:
                     gh_metrics[k].append(m[k])
-                    
-        # Faire la moyenne globale
+        
+        # Obtenir le nombre TOTAL de compartiments enregistrés en cache pour la serre
+        total_comp_count = len(all_comps) if all_comps else 1
+        
+        # Faire la moyenne globale : diviser par le TOTAL des compartiments (option 1)
+        # Les compartiments sans valeur contribuent comme 0 au numérateur
         global_computed[gh] = {
-            "ta": calc_average(gh_metrics["ta"]),
-            "ts": calc_average(gh_metrics["ts"]),
-            "ha": calc_average(gh_metrics["ha"]),
-            "hs": calc_average(gh_metrics["hs"])
+            "ta": (sum(gh_metrics["ta"]) / total_comp_count) if total_comp_count > 0 else None,
+            "ts": (sum(gh_metrics["ts"]) / total_comp_count) if total_comp_count > 0 else None,
+            "ha": (sum(gh_metrics["ha"]) / total_comp_count) if total_comp_count > 0 else None,
+            "hs": (sum(gh_metrics["hs"]) / total_comp_count) if total_comp_count > 0 else None
         }
 
     # Compare la moyenne globale avec la BDD (et génère des alertes globales)

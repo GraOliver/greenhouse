@@ -1,0 +1,1977 @@
+{
+  "S1": {
+    "computed": {
+      "S1": {
+        "C1": {
+          "ta": 25.5,
+          "ts": 47.0,
+          "ha": 85.0,
+          "hs": 47.0
+        },
+        "C2": {
+          "ta": 25.5,
+          "ts": 47.0,
+          "ha": 85.0,
+          "hs": 47.0
+        },
+        "C3": {
+          "ta": 25.5,
+          "ts": 47.0,
+          "ha": 85.0,
+          "hs": 47.0
+        },
+        "C4": {
+          "ta": 25.5,
+          "ts": 47.0,
+          "ha": 85.0,
+          "hs": 47.0
+        }
+      }
+    },
+    "comparison": {
+      "S1": {
+        "current": {
+          "ta": 25.5,
+          "ts": 47.0,
+          "ha": 85.0,
+          "hs": 47.0
+        },
+        "historical": {
+          "ta": null,
+          "ha": null,
+          "ts": null,
+          "hs": null
+        },
+        "thresholds": {
+          "ta_min": 20.0,
+          "ta_max": 25.0,
+          "ts_min": 15.0,
+          "ts_max": 30.0,
+          "ha_min": 50.0,
+          "ha_max": 80.0,
+          "hs_min": 50.0,
+          "hs_max": 70.0
+        },
+        "decisions": [
+          "S1: ta supérieur au seuil max",
+          "S1: ts supérieur au seuil max",
+          "S1: ha supérieur au seuil max",
+          "S1: hs inférieur au seuil min"
+        ]
+      }
+    },
+    "entries": [
+      {
+        "timestamp": 1779590918.0177093,
+        "datetime": "2026-05-24T03:48:38.017709",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590922.8953738,
+        "datetime": "2026-05-24T03:48:42.895373",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590924.6622922,
+        "datetime": "2026-05-24T03:48:44.662292",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590926.1758134,
+        "datetime": "2026-05-24T03:48:46.175813",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590926.6934,
+        "datetime": "2026-05-24T03:48:46.693399",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590930.5379755,
+        "datetime": "2026-05-24T03:48:50.537975",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590931.6381392,
+        "datetime": "2026-05-24T03:48:51.638139",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590933.389693,
+        "datetime": "2026-05-24T03:48:53.389692",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590934.5384653,
+        "datetime": "2026-05-24T03:48:54.538465",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590934.9580033,
+        "datetime": "2026-05-24T03:48:54.958003",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590935.3821363,
+        "datetime": "2026-05-24T03:48:55.382136",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590936.8944647,
+        "datetime": "2026-05-24T03:48:56.894464",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590937.3913035,
+        "datetime": "2026-05-24T03:48:57.391303",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590938.436331,
+        "datetime": "2026-05-24T03:48:58.436331",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590939.016386,
+        "datetime": "2026-05-24T03:48:59.016386",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590940.2186904,
+        "datetime": "2026-05-24T03:49:00.218690",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590942.1797793,
+        "datetime": "2026-05-24T03:49:02.179779",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590943.0480075,
+        "datetime": "2026-05-24T03:49:03.048007",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590943.4867072,
+        "datetime": "2026-05-24T03:49:03.486707",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590943.7578502,
+        "datetime": "2026-05-24T03:49:03.757850",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590943.881654,
+        "datetime": "2026-05-24T03:49:03.881654",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590947.162569,
+        "datetime": "2026-05-24T03:49:07.162568",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590947.4710376,
+        "datetime": "2026-05-24T03:49:07.471037",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590948.4822452,
+        "datetime": "2026-05-24T03:49:08.482245",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590949.0865617,
+        "datetime": "2026-05-24T03:49:09.086561",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590950.3166168,
+        "datetime": "2026-05-24T03:49:10.316616",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779590952.3697238,
+        "datetime": "2026-05-24T03:49:12.369724",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C2": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C3": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "C4": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": 51.0,
+              "ha": null,
+              "hs": 51.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": [
+              "S1: ts supérieur au seuil max",
+              "S1: hs inférieur au seuil min"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": 1779591642.5755062,
+        "datetime": "2026-05-24T04:00:42.575506",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              "ts_min": 15.0,
+              "ts_max": 30.0,
+              "ha_min": 50.0,
+              "ha_max": 80.0,
+              "hs_min": 70.0,
+              "hs_max": 80.0
+            },
+            "decisions": []
+          }
+        }
+      },
+      {
+        "timestamp": 1779591645.0553877,
+        "datetime": "2026-05-24T04:00:45.055387",
+        "computed": {
+          "S1": {
+            "data": {
+              "ta": null,
+              "ts": null,
+              "ha": null,
+              "hs": null
+            },
+            "C1": {
+              "ta": 26.4,
+              "ts": 48.0,
+              "ha": 82.6,
+              "hs": 48.0
+            }
+          }
+        },
+        "comparison": {
+          "S1": {
+            "current": {
+              "ta": 26.4,
+              "ts": 48.0,
+              "ha": 82.6,
+              "hs": 48.0
+            },
+            "historical": {
+              "ta": null,
+              "ha": null,
+              "ts": null,
+              "hs": null
+            },
+            "thresholds": {
+              "ta_min": 20.0,
+              "ta_max": 25.0,
+              

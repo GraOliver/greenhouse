@@ -124,8 +124,11 @@ async function selectGreenhouse(id) {
     
     // Démarrer le polling des données calculées (moyennes, comparaison avec seuils)
     // Cette fonction charge d'abord la mémoire, puis le cache JSON si nécessaire
+    // NOTE : Les moyennes sont maintenant poussées en temps réel via SSE, donc ce polling
+    // est un fallback léger (réduit à 30s). Les données du cache sont utilisées pour restaurer
+    // l'historique après un rafraîchissement de page.
     await fetchSensorCalculations(selectedId);
-    sensorDataPollingInterval = setInterval(() => fetchSensorCalculations(selectedId), 5000);  // Toutes les 5s
+    sensorDataPollingInterval = setInterval(() => fetchSensorCalculations(selectedId), 30000);  // Toutes les 30s (fallback)
     
     // Mettre à jour le graphique toutes les 2.5s avec les nouvelles données
     chartInterval = setInterval(updateChartData, 2500);
@@ -553,11 +556,14 @@ function initSSE() {
             const topic = data.topic;
             const msg = data.payload;
             
-            const parts = topic.split('/');
-            if (parts.length >= 4 && parts[3] === 'averages') {
-                const ghId = parts[2];
+            // Si c'est un message de moyennes, afficher immédiatement
+            if (topic.includes('/averages/')) {
+                const topicParts = topic.split('/');
+                const ghId = topicParts[2];
                 if (ghId === selectedId) {
+                    // Les moyennes sont déjà calculées côté serveur de manière cohérente
                     updateAveragesUI(msg);
+                    console.log(`[SSE] Moyennes reçues pour ${ghId}:`, msg);
                 }
                 return;
             }

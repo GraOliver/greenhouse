@@ -103184,68 +103184,6 @@
             ]
           }
         }
-      },
-      {
-        "timestamp": 1779596347.6453545,
-        "datetime": "2026-05-24T05:19:07.645354",
-        "computed": {
-          "S2": {
-            "C1": {
-              "ta": 25.5,
-              "ts": 47.0,
-              "ha": 85.0,
-              "hs": 47.0
-            },
-            "C2": {
-              "ta": 25.5,
-              "ts": 47.0,
-              "ha": 85.0,
-              "hs": 47.0
-            },
-            "C3": {
-              "ta": 25.5,
-              "ts": 47.0,
-              "ha": 85.0,
-              "hs": 47.0
-            },
-            "C4": {
-              "ta": 25.5,
-              "ts": 47.0,
-              "ha": 85.0,
-              "hs": 47.0
-            }
-          }
-        },
-        "comparison": {
-          "S2": {
-            "current": {
-              "ta": 25.5,
-              "ts": 47.0,
-              "ha": 85.0,
-              "hs": 47.0
-            },
-            "historical": {
-              "ta": null,
-              "ha": null,
-              "ts": null,
-              "hs": null
-            },
-            "thresholds": {
-              "ta_min": 15.0,
-              "ta_max": 22.0,
-              "ts_min": 12.0,
-              "ts_max": 20.0,
-              "ha_min": 60.0,
-              "ha_max": 85.0,
-              "hs_min": 40.0,
-              "hs_max": 80.0
-            },
-            "decisions": [
-              "S2: ta supérieur au seuil max",
-              "S2: ts supérieur au seuil max"
-            ]
-          }
-        }
       }
     ]
   }

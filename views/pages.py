@@ -37,7 +37,7 @@ from models.culture import (
     update_culture,
     delete_culture,
 )
-from services.mqtt_service import get_sensor_data
+from services.mqtt_service import get_sensor_data, register_listener, unregister_listener
 from processing.cache import get_cache_data, get_cache_entries
 
 # Blueprint principal des pages et des API de l'application.
@@ -417,21 +417,25 @@ def api_cultures():
 
 @pages_bp.route('/api/stream')
 def api_stream():
-    # Flux SSE de démonstration qui envoie régulièrement des valeurs moyennes.
-    # Ce endpoint peut être étendu ultérieurement vers un vrai flux MQTT / WebSocket.
+    # Endpoint SSE réel : s'abonne à la queue du service MQTT et renvoie les messages
     def event_stream():
-        while True:
-            payload = {
-                'topic': 'serre/updates/averages',
-                'payload': {
-                    'TA': round(20.0 + random.random() * 6.0, 1),
-                    'TS': round(18.0 + random.random() * 5.0, 1),
-                    'HA': round(55.0 + random.random() * 12.0, 1),
-                    'HS': round(35.0 + random.random() * 18.0, 1),
-                }
-            }
-            yield f'data: {json.dumps(payload)}\n\n'
-            time.sleep(5)
+        q = register_listener()
+        try:
+            while True:
+                try:
+                    msg = q.get(timeout=15)
+                except Exception:
+                    # envoyer un keep-alive pour éviter que la connexion ne tombe
+                    yield ':\n\n'
+                    continue
+
+                try:
+                    yield f"data: {json.dumps(msg)}\n\n"
+                except Exception:
+                    # Ignore serialization errors per-message
+                    continue
+        finally:
+            unregister_listener(q)
 
     return Response(stream_with_context(event_stream()), content_type='text/event-stream')
 

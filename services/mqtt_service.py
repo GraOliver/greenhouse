@@ -6,7 +6,7 @@ import paho.mqtt.client as mqtt
 import json
 import queue
 import time
-from processing.processor import process_raw_sensor_message
+from processing.processor import process_raw_sensor_message, LATEST_COMPARTMENT_DATA
 from processing.cache import save_sensor_data_to_cache
 from models.database import save_history_event
 from models.greenhouse import get_greenhouse
@@ -26,7 +26,7 @@ sensor_data_store = {}
 
 def register_listener():
     """Enregistre un nouveau client SSE et retourne sa file d'attente dédiée."""
-    q = queue.Queue(maxsize=1)   # Limite de 5 messages en attente pour éviter les débordements
+    q = queue.Queue(maxsize=100)   # Limite de 5 messages en attente pour éviter les débordements
     sse_listeners.append(q)
     return q
 
@@ -92,7 +92,7 @@ def on_message(client, userdata, msg):
     try:
         payload = msg.payload.decode() # pour lire les information
         data = json.loads(payload)
-        
+        print(f"Reçu message MQTT sur {msg.topic} : {data}")
     except Exception:
         data = {'raw': msg.payload.decode()}
 
@@ -104,6 +104,7 @@ def on_message(client, userdata, msg):
             gh_id = parts[2]
             status_str = payload.strip().upper() if isinstance(payload, str) else str(payload)
             status_str = status_str.strip().upper()
+            print(f"Reçu statut MQTT pour {gh_id} : {status_str}")
             # Si l'ESP32 annonce ONLINE, nous envoyons les seuils configurés
             if status_str == 'ONLINE':
                 try:
@@ -142,7 +143,12 @@ def on_message(client, userdata, msg):
                     print(f"Erreur en traitant device status pour {gh_id}: {e}")
             return
 
-        # Cas: messages de capteurs habituels ex: nsele/raw_sensor/<gh_id>/<comp_id>
+        # Cas: messages de capteurs habituels ex: nsele/raw_sensor/<gh_id>/<comp_id> ou nsele/row_sensor/<gh_id>/<comp_id>
+        # Vérifier que le topic est bien un topic capteur
+        if parts[1] not in ('raw_sensor', 'row_sensor'):
+            print(f"Format de topic inattendu : {msg.topic}. Attendu 'nsele/raw_sensor/<gh_id>/<comp_id>' ou 'nsele/row_sensor/<gh_id>/<comp_id>'.")
+            return
+        
         gh_id = parts[2]  # ID de la serre
         comp_id = parts[3]  # ID du compartiment
 
@@ -158,6 +164,39 @@ def on_message(client, userdata, msg):
             }
             # Sauvegarder les données calculées dans le cache JSON pour persistence
             save_sensor_data_to_cache(gh_id, result)
+            # Calculer et diffuser immédiatement les moyennes globales pour cette serre
+            try:
+                comps = result.get('computed', {}).get(gh_id, {})
+                totalTA = totalTS = totalHA = totalHS = 0.0
+                for comp in comps.values():
+                    if comp.get('ta') is not None:
+                        totalTA += float(comp.get('ta'))
+                    if comp.get('ts') is not None:
+                        totalTS += float(comp.get('ts'))
+                    if comp.get('ha') is not None:
+                        totalHA += float(comp.get('ha'))
+                    if comp.get('hs') is not None:
+                        totalHS += float(comp.get('hs'))
+                
+                # Diviser par le NOMBRE TOTAL de compartiments enregistrés en cache (option 1)
+                total_comp_count = len(LATEST_COMPARTMENT_DATA.get(gh_id, {}))
+                if total_comp_count == 0:
+                    total_comp_count = len(comps) if comps else 1
+                
+                if total_comp_count > 0:
+                    averages_payload = {
+                        'TA': round(totalTA / total_comp_count, 1),
+                        'TS': round(totalTS / total_comp_count, 1),
+                        'HA': round(totalHA / total_comp_count, 1),
+                        'HS': round(totalHS / total_comp_count, 1),
+                    }
+                else:
+                    averages_payload = {'TA': None, 'TS': None, 'HA': None, 'HS': None}
+
+                averages_topic = f"nsele/averages/{gh_id}/averages"
+                broadcast_sensor_data(averages_topic, averages_payload)
+            except Exception:
+                pass
 
             # Enregistrer les données capteur dans l'historique immédiatement
             raw_data = data['raw'] if 'raw' in data else data
@@ -171,7 +210,7 @@ def on_message(client, userdata, msg):
             print(f"Erreur lors du traitement des données : {e}")
 
     else:
-        print(f"Format de topic inattendu : {msg.topic}. Attendu 'nsele/raw_sensor/<gh_id>/<comp_id>'.")
+        print(f"Format de topic inattendu : {msg.topic}. Attendu 'nsele/raw_sensor/<gh_id>/<comp_id>' ou 'nsele/row_sensor/<gh_id>/<comp_id>'.")
         return
 
     # Diffuser les données à tous les clients SSE connectés
