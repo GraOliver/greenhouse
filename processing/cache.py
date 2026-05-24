@@ -7,6 +7,8 @@ pour survire aux actualisations de page, puis les migre vers la BDD toutes les h
 import os
 import json
 import time
+import shutil
+from json import JSONDecoder, JSONDecodeError
 from datetime import datetime
 from pathlib import Path
 
@@ -59,10 +61,20 @@ def save_sensor_data_to_cache(gh_id: str, calculation_result: dict):
     cache_data[gh_id]['computed'] = calculation_result.get('computed', {})
     cache_data[gh_id]['comparison'] = calculation_result.get('comparison', {})
     
-    # Écrire dans le fichier
+    # Écrire dans le fichier de façon atomique et sauvegarder l'ancienne version
     try:
-        with open(CACHE_FILE, 'w', encoding='utf-8') as f:
+        # backup existing file
+        if os.path.exists(CACHE_FILE):
+            try:
+                shutil.copy2(CACHE_FILE, CACHE_FILE + '.bak')
+            except Exception:
+                pass
+
+        tmp_file = CACHE_FILE + '.tmp'
+        with open(tmp_file, 'w', encoding='utf-8') as f:
             json.dump(cache_data, f, indent=2, ensure_ascii=False)
+        # atomic replace
+        os.replace(tmp_file, CACHE_FILE)
     except Exception as e:
         print(f"Erreur lors de la sauvegarde du cache : {e}")
 
@@ -76,12 +88,79 @@ def load_cache() -> dict:
     
     if not os.path.exists(CACHE_FILE):
         return {}
-    
+
     try:
         with open(CACHE_FILE, 'r', encoding='utf-8') as f:
             return json.load(f)
-    except Exception as e:
+    except JSONDecodeError as e:
         print(f"Erreur lors de la lecture du cache : {e}")
+        # Tentatives de récupération : NDJSON -> objets concaténés -> restauration .bak
+        try:
+            with open(CACHE_FILE, 'r', encoding='utf-8') as f:
+                text = f.read()
+        except Exception:
+            return {}
+
+        # 1) NDJSON (une JSON par ligne)
+        nd_objects = []
+        try:
+            for i, line in enumerate(text.splitlines(), 1):
+                line = line.strip()
+                if not line:
+                    continue
+                nd_objects.append(json.loads(line))
+        except Exception:
+            nd_objects = []
+
+        if nd_objects:
+            repaired_path = CACHE_FILE + '.repaired.ndjson.json'
+            try:
+                with open(repaired_path, 'w', encoding='utf-8') as rf:
+                    json.dump(nd_objects, rf, indent=2, ensure_ascii=False)
+                print(f"NDJSON détecté — version réparée écrite dans {repaired_path}")
+            except Exception:
+                pass
+            return {}
+
+        # 2) objets JSON concaténés (raw_decode en boucle)
+        try:
+            decoder = JSONDecoder()
+            idx = 0
+            length = len(text)
+            objs = []
+            while idx < length:
+                obj, offset = decoder.raw_decode(text, idx)
+                objs.append(obj)
+                idx += offset
+                while idx < length and text[idx].isspace():
+                    idx += 1
+        except Exception:
+            objs = []
+
+        if objs:
+            repaired_path = CACHE_FILE + '.repaired.concat.json'
+            try:
+                with open(repaired_path, 'w', encoding='utf-8') as rf:
+                    json.dump(objs, rf, indent=2, ensure_ascii=False)
+                print(f"Objets concaténés détectés — version réparée écrite dans {repaired_path}")
+            except Exception:
+                pass
+            return {}
+
+        # 3) tenter de restaurer la sauvegarde .bak si disponible
+        bak = CACHE_FILE + '.bak'
+        if os.path.exists(bak):
+            try:
+                with open(bak, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                print("Fichier corrompu. Chargement depuis .bak réussi.")
+                return data
+            except Exception:
+                pass
+
+        return {}
+    except Exception as e:
+        print(f"Erreur inattendue lors de la lecture du cache : {e}")
         return {}
 
 
@@ -127,8 +206,15 @@ def clear_cache_for_serre(gh_id: str):
         }
     
     try:
-        with open(CACHE_FILE, 'w', encoding='utf-8') as f:
+        if os.path.exists(CACHE_FILE):
+            try:
+                shutil.copy2(CACHE_FILE, CACHE_FILE + '.bak')
+            except Exception:
+                pass
+        tmp_file = CACHE_FILE + '.tmp'
+        with open(tmp_file, 'w', encoding='utf-8') as f:
             json.dump(cache_data, f, indent=2, ensure_ascii=False)
+        os.replace(tmp_file, CACHE_FILE)
     except Exception as e:
         print(f"Erreur lors de la suppression du cache : {e}")
 
@@ -137,7 +223,14 @@ def clear_all_cache():
     """Vide complètement le cache."""
     ensure_cache_dir()
     try:
-        with open(CACHE_FILE, 'w', encoding='utf-8') as f:
+        if os.path.exists(CACHE_FILE):
+            try:
+                shutil.copy2(CACHE_FILE, CACHE_FILE + '.bak')
+            except Exception:
+                pass
+        tmp_file = CACHE_FILE + '.tmp'
+        with open(tmp_file, 'w', encoding='utf-8') as f:
             json.dump({}, f, indent=2, ensure_ascii=False)
+        os.replace(tmp_file, CACHE_FILE)
     except Exception as e:
         print(f"Erreur lors du vidage du cache : {e}")

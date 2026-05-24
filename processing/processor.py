@@ -12,11 +12,18 @@ Les fonctions incluent des commentaires en français comme demandé.
 """
 
 from typing import List, Dict, Any, Optional
+import time
 from models.database import get_db_connection, create_alert, auto_resolve_alerts
 
 # Variable globale pour stocker la dernière mesure connue de chaque compartiment
 # Format: { 'S1': { 'C1': {'ta': 20.0, 'ts': 18.0}, 'C2': {'ta': 21.0, ...} } }
 LATEST_COMPARTMENT_DATA = {}
+# timestamps des dernières mises à jour par compartiment (pour détecter staleness)
+LATEST_COMPARTMENT_TS = {}
+
+# Seuil en secondes après lequel une mesure est considérée comme 'stale' (invalide)
+# Ajustez selon la fréquence de publications attendue des capteurs (ex: 120s)
+STALE_THRESHOLD_SECONDS = 120
 
 
 def normalize_ids(ids) -> List[str]:
@@ -43,6 +50,7 @@ def calc_average(values: List[float]) -> Optional[float]:
     nums = [v for v in values if isinstance(v, (int, float))]
     if not nums:
         return None
+    
     return sum(nums) / len(nums)
 
 
@@ -157,17 +165,13 @@ def compare_with_db(global_averages: Dict[str, Dict[str, Optional[float]]]) -> D
             if thresholds.get(min_key) is not None and thresholds.get(max_key) is not None:
                 is_alert = False
                 
-                # Import local pour éviter l'import circulaire avec mqtt_service
-                from services.mqtt_service import publish_actuator_command
-                
                 if cur_val < thresholds[min_key]:
                     msg = f"La moyenne globale de {label} est trop basse ({cur_val:.1f} < {thresholds[min_key]:.1f})"
                     decisions.append(f"{serre_nom}: {key} inférieur au seuil min")
                     
                     if create_alert(serre_nom, key, msg):
-                        # Action automatique si nouvelle alerte créée
-                        if key == 'hs':  # Humidité sol basse = allumer pompe
-                            publish_actuator_command(serre_nom, 'pump', 'on')
+                        # Nouvelle alerte créée (pas d'action automatique depuis le serveur)
+                        pass
                     is_alert = True
                 
                 elif cur_val > thresholds[max_key]:
@@ -175,21 +179,15 @@ def compare_with_db(global_averages: Dict[str, Dict[str, Optional[float]]]) -> D
                     decisions.append(f"{serre_nom}: {key} supérieur au seuil max")
                     
                     if create_alert(serre_nom, key, msg):
-                        # Action automatique si nouvelle alerte créée
-                        if key == 'ta':  # Température air haute = allumer ventilateur
-                            publish_actuator_command(serre_nom, 'cooling', 'on')
-                        elif key == 'ts': # Température sol haute = allumer pompe (arrosage) pour rafraîchir
-                            publish_actuator_command(serre_nom, 'pump', 'on')
+                        # Nouvelle alerte créée (pas d'action automatique depuis le serveur)
+                        pass
                     is_alert = True
                 
                 # Si aucune alerte sur cette métrique (valeur normale), on tente une auto-résolution
                 if not is_alert:
                     if auto_resolve_alerts(serre_nom, key):
-                        # Si une alerte vient d'être résolue, on éteint l'actionneur correspondant
-                        if key == 'ta':
-                            publish_actuator_command(serre_nom, 'cooling', 'off')
-                        elif key == 'hs' or key == 'ts':
-                            publish_actuator_command(serre_nom, 'pump', 'off')
+                        # Si une alerte vient d'être résolue, on n'envoie plus d'action automatique
+                        pass
 
         results[serre_nom] = {
             "current": metrics,
@@ -239,6 +237,10 @@ def process_raw_sensor_message(gh_id, comp_id, data):
                         
             # Enregistrer la dernière valeur pour ce compartiment
             LATEST_COMPARTMENT_DATA[gh][comp] = metrics
+            # Mettre à jour le timestamp pour ce compartiment
+            if gh not in LATEST_COMPARTMENT_TS:
+                LATEST_COMPARTMENT_TS[gh] = {}
+            LATEST_COMPARTMENT_TS[gh][comp] = time.time()
 
     # Calculer la MOYENNE GLOBALE pour chaque serre modifiée
     global_computed = {}
@@ -247,7 +249,14 @@ def process_raw_sensor_message(gh_id, comp_id, data):
         gh_metrics = {"ta": [], "ts": [], "ha": [], "hs": []}
         
         # Récolter les valeurs de tous les compartiments de cette serre
+        now = time.time()
         for c, m in all_comps.items():
+            # ignorer les compartiments qui n'ont pas été mis à jour récemment
+            ts = LATEST_COMPARTMENT_TS.get(gh, {}).get(c)
+            if ts is None:
+                continue
+            if now - ts > STALE_THRESHOLD_SECONDS:
+                continue
             for k in gh_metrics.keys():
                 if m.get(k) is not None:
                     gh_metrics[k].append(m[k])
@@ -264,8 +273,8 @@ def process_raw_sensor_message(gh_id, comp_id, data):
     comparison = compare_with_db(global_computed)
 
     # Log pour debug
-    print(f"Global computed averages: {global_computed}")
-    print(f"Comparison results: {comparison}")
+    # print(f"Global computed averages: {global_computed}")
+    # print(f"Comparison results: {comparison}")
 
     # Pour garder la compatibilité avec le reste du code qui s'attend
     # à un dictionnaire de type {'computed': {'S1': {'C1': {...}, 'C2': {...}}}}

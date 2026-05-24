@@ -9,6 +9,8 @@ import time
 from processing.processor import process_raw_sensor_message
 from processing.cache import save_sensor_data_to_cache
 from models.database import save_history_event
+from models.greenhouse import get_greenhouse
+from models.culture import get_culture
 
 # Configuration du broker MQTT
 MQTT_BROKER = '192.168.1.173' # Le IPV de la machine ici nous sommess en locale
@@ -24,7 +26,7 @@ sensor_data_store = {}
 
 def register_listener():
     """Enregistre un nouveau client SSE et retourne sa file d'attente dédiée."""
-    q = queue.Queue(maxsize=100)   # Limite de 100 messages en attente pour éviter les débordements
+    q = queue.Queue(maxsize=1)   # Limite de 5 messages en attente pour éviter les débordements
     sse_listeners.append(q)
     return q
 
@@ -94,14 +96,56 @@ def on_message(client, userdata, msg):
     except Exception:
         data = {'raw': msg.payload.decode()}
 
-    # Traiter les données brutes des capteurs
-    # if msg.topic.startswith('nsele/raw_sensor/'):
+    # Traiter les messages MQTT
     parts = msg.topic.split('/')
     if len(parts) >= 4:
+        # Cas: device status, ex: nsele/device/<idserre>/status
+        if parts[1] == 'device' and parts[3].lower() == 'status':
+            gh_id = parts[2]
+            status_str = payload.strip().upper() if isinstance(payload, str) else str(payload)
+            status_str = status_str.strip().upper()
+            # Si l'ESP32 annonce ONLINE, nous envoyons les seuils configurés
+            if status_str == 'ONLINE':
+                try:
+                    gh = get_greenhouse(gh_id)
+                    if gh and gh.get('culture_id'):
+                        cult = get_culture(gh.get('culture_id'))
+                    else:
+                        cult = None
+
+                    thresholds = {
+                        'hs_min': None,
+                        'hs_max': None,
+                        'ha_min': None,
+                        'ha_max': None,
+                        'ts_min': None,
+                        'ts_max': None,
+                        'ta_min': None,
+                        'ta_max': None,
+                    }
+
+                    if cult:
+                        thresholds['hs_min'] = cult.get('humidite_sol_min')
+                        thresholds['hs_max'] = cult.get('humidite_sol_max')
+                        thresholds['ha_min'] = cult.get('humidite_air_min')
+                        thresholds['ha_max'] = cult.get('humidite_air_max')
+                        thresholds['ts_min'] = cult.get('temperature_sol_min')
+                        thresholds['ts_max'] = cult.get('temperature_sol_max')
+                        thresholds['ta_min'] = cult.get('temperature_air_min')
+                        thresholds['ta_max'] = cult.get('temperature_air_max')
+
+                    topic_out = f"nsele/device/{gh_id}/data"
+                    payload_out = json.dumps(thresholds)
+                    client.publish(topic_out, payload_out)
+                    print(f"Envoyé seuils à {topic_out} : {payload_out}")
+                except Exception as e:
+                    print(f"Erreur en traitant device status pour {gh_id}: {e}")
+            return
+
+        # Cas: messages de capteurs habituels ex: nsele/raw_sensor/<gh_id>/<comp_id>
         gh_id = parts[2]  # ID de la serre
         comp_id = parts[3]  # ID du compartiment
-            
-            # Appeler le processor pour calculer moyennes et comparaison
+
         try:
             result = process_raw_sensor_message(gh_id, comp_id, data['raw'] if 'raw' in data else data)
             # Stocker le résultat pour accès futur (via API)
@@ -111,10 +155,10 @@ def on_message(client, userdata, msg):
                 'computed': result.get('computed', {}),
                 'comparison': result.get('comparison', {}),
                 'timestamp': time.time()
-                }
+            }
             # Sauvegarder les données calculées dans le cache JSON pour persistence
             save_sensor_data_to_cache(gh_id, result)
-                
+
             # Enregistrer les données capteur dans l'historique immédiatement
             raw_data = data['raw'] if 'raw' in data else data
             if isinstance(raw_data, dict):
@@ -125,12 +169,11 @@ def on_message(client, userdata, msg):
 
         except Exception as e:
             print(f"Erreur lors du traitement des données : {e}")
-            
+
     else:
         print(f"Format de topic inattendu : {msg.topic}. Attendu 'nsele/raw_sensor/<gh_id>/<comp_id>'.")
         return
 
-    
     # Diffuser les données à tous les clients SSE connectés
     broadcast_sensor_data(msg.topic, data)
     
