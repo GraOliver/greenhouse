@@ -14,6 +14,7 @@ from models.culture import get_culture
 
 # Configuration du broker MQTT
 MQTT_BROKER = '192.168.1.173' # Le IPV de la machine ici nous sommess en locale
+# MQTT_BROKER = 'localhost'
 MQTT_PORT = 1883
 client = mqtt.Client() # creation client
 
@@ -141,6 +142,12 @@ def on_message(client, userdata, msg):
                     print(f"Envoyé seuils à {topic_out} : {payload_out}")
                 except Exception as e:
                     print(f"Erreur en traitant device status pour {gh_id}: {e}")
+            return
+
+        # Cas: device data, ex: nsele/device/<idserre>/data
+        if parts[1] == 'device' and parts[3].lower() == 'data':
+            gh_id = parts[2]
+            print(f"Reçu message device MQTT pour {gh_id} : {data}")
             return
 
         # Cas: messages de capteurs habituels ex: nsele/raw_sensor/<gh_id>/<comp_id> ou nsele/row_sensor/<gh_id>/<comp_id>

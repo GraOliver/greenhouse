@@ -17,11 +17,20 @@
                 <p class="eyebrow">Nsele</p>
                 <h2>{% block header_title %}Serre connectée{% endblock %}</h2>
             </div>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                {% block navbar_actions %}{% endblock %}
             <nav style="display: flex; align-items: center;">
                 <a href="/" {% if request.path == '/' %}style="text-decoration: underline; color: white;"{% endif %}>Dashboard</a>
                 <a href="/commande" {% if request.path == '/commande' %}style="text-decoration: underline; color: white;"{% endif %}>Commandes</a>
                 <a href="/history" {% if request.path == '/history' %}style="text-decoration: underline; color: white;"{% endif %}>Historique</a>
                 <a href="/settings" {% if request.path == '/settings' %}style="text-decoration: underline; color: white;"{% endif %}>Paramètres</a>
+                
+                {% if current_user.is_authenticated %}
+                    {% if current_user.is_admin %}
+                    <a href="/admin" style="text-decoration: none; color: #10b981; font-weight: bold; margin-left: 10px;">⚙️ Admin</a>
+                    {% endif %}
+                    <a href="{{ url_for('auth.logout') }}" style="text-decoration: none; color: #fca5a5; font-weight: bold; margin-left: 10px;">Déconnexion</a>
+                {% endif %}
                 
                 <!-- Cloche de notification globale -->
                 <div class="notification-container">
@@ -41,6 +50,7 @@
                     </div>
                 </div>
             </nav>
+            </div>
         </header>
 
         <!-- Contenu principal -->

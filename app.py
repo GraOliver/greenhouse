@@ -1,27 +1,55 @@
+import os
 from flask import Flask
+from flask_login import LoginManager
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
+from flask_login import current_user
 
 from models.database import initialize_database
 from views.pages import pages_bp
-from services.mqtt_service import mqtt_start, on_connect, on_message
+from views.auth import auth_bp
+from services.mqtt_service import mqtt_start
 from processing.migration import start_migration_scheduler
+from models.orm import db, User, Serre, Culture
 
+class SecureModelView(ModelView):
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.is_admin
 
-# Création de l'application Flask et enregistrement des blueprints.
-# La base de données est initialisée au démarrage pour s'assurer que
-# les tables et les données initiales existent avant toute requête.
 def create_app():
     app = Flask(__name__, template_folder='templates', static_folder='static')
+    app.config['SECRET_KEY'] = 'cle_secrete_super_securisee'
+    
+    db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'serre.db'))
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    
+    db.init_app(app)
+    
+    login_manager = LoginManager()
+    login_manager.login_view = 'auth.login'
+    login_manager.login_message = "Veuillez vous connecter pour accéder à cette page."
+    login_manager.init_app(app)
+    
+    @login_manager.user_loader
+    def load_user(user_id):
+        return db.session.get(User, int(user_id))
+    
     app.register_blueprint(pages_bp)
+    app.register_blueprint(auth_bp)
+    
     initialize_database()
-    mqtt_start()  # Démarrer le service MQTT après le lancement de Flask
-    start_migration_scheduler()  # Démarrer le scheduler de migration vers la BDD
+    
+    admin = Admin(app, name='Nsele Admin', url='/admin')
+    admin.add_view(SecureModelView(User, db.session))
+    admin.add_view(SecureModelView(Serre, db.session))
+    admin.add_view(SecureModelView(Culture, db.session))
+    
+    mqtt_start()
+    start_migration_scheduler()
     return app
 
-
-# Crée l'application une seule fois afin que `flask run` fonctionne aussi.
 app = create_app()
-
 
 if __name__ == '__main__':
     app.run(debug=True)
-   

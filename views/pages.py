@@ -12,6 +12,7 @@ import time
 import re
 import unicodedata
 from flask import Blueprint, Response, render_template, request, stream_with_context, jsonify, redirect, url_for
+from flask_login import login_required
 
 from services.mqtt_service import publish_actuator_command
 from models.database import (
@@ -97,6 +98,7 @@ def _build_placeholder_state(greenhouse):
 # Ces routes renvoient des templates Jinja destinés à être vus directement
 # par l'utilisateur via un navigateur.
 @pages_bp.route('/')
+@login_required
 def dashboard():
     # Page principale du dashboard.
     # Récupère toutes les serres depuis la base de données.
@@ -110,6 +112,7 @@ def dashboard():
 
 
 @pages_bp.route('/commande')
+@login_required
 def commande():
     # Page des commandes et actions possibles.
     greenhouses = get_all_greenhouses()
@@ -117,6 +120,7 @@ def commande():
 
 
 @pages_bp.route('/history')
+@login_required
 def history_page():
     # Page de l'historique des mesures et événements.
     greenhouses = get_all_greenhouses()
@@ -124,6 +128,7 @@ def history_page():
 
 
 @pages_bp.route('/settings')
+@login_required
 def settings():
     # Page de configuration des serres et paramètres.
     # Passe la liste des serres et des cultures au template.

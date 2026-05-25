@@ -192,7 +192,7 @@ def load_cache() -> dict:
                 pass
 
         return {}
-    # except Exception as e:
+        # except Exception as e:
         print(f"Erreur inattendue lors de la lecture du cache : {e}")
         return {}
 

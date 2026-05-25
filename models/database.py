@@ -1,6 +1,7 @@
 import os
 import sqlite3
 from models.db import load_data
+from werkzeug.security import generate_password_hash
 
 # Chemin du fichier SQLite (serre.db à la racine du projet)
 DB_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'serre.db'))
@@ -40,6 +41,15 @@ def create_tables():
             humidite_sol_max REAL,
             humidite_air_min REAL,
             humidite_air_max REAL
+        )
+    ''')
+
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE,
+            password_hash TEXT NOT NULL,
+            is_admin BOOLEAN DEFAULT 0
         )
     ''')
 
@@ -170,6 +180,22 @@ def seed_database_from_json():
     conn.close()
 
 
+def seed_admin_user():
+    """Crée un utilisateur admin par défaut si la table users est vide."""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) FROM users")
+    count = cur.fetchone()[0]
+    if count == 0:
+        hashed = generate_password_hash('admin')
+        cur.execute(
+            "INSERT INTO users (username, password_hash, is_admin) VALUES (?, ?, ?)",
+            ('admin', hashed, 1)
+        )
+        conn.commit()
+    conn.close()
+
+
 def initialize_database():
     """Crée les tables si nécessaires et insère les données initiales si la base est vide.
 
@@ -187,6 +213,8 @@ def initialize_database():
 
     if serre_count == 0 or culture_count == 0:
         seed_database_from_json()
+        
+    seed_admin_user()
 
 
 # Fonction d'aide pour sauvegarder un événement dans l'historique (capteurs ou actionneurs)

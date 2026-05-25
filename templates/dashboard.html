@@ -3,22 +3,29 @@
 {% block title %}Nsele - Dashboard{% endblock %}
 {% block header_title %}Serre connectée{% endblock %}
 
-{% block content %}
-<!-- Barre de sélection des serres -->
-<div style="margin-bottom: 24px;">
-    <div id="greenhouse-bar" class="greenhouse-bar">
+{% block navbar_actions %}
+<!-- Sélecteur de serre pour la navbar -->
+<div style="display: flex; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.15); padding: 4px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+    <span style="font-size: 1.2rem;">🌱</span>
+    <select id="greenhouse-select" onchange="selectGreenhouse(this.value)" style="background: transparent; color: white; border: none; outline: none; font-size: 0.95rem; font-weight: 600; cursor: pointer;">
         {% if greenhouses %}
             {% for gh in greenhouses %}
-            <div class="gh-item">
-                <strong>{{ gh.name }}</strong>
-                <small>{{ gh.culture or 'Culture inconnue' }}</small>
-            </div>
+                <option value="{{ gh.id }}" style="color: #0f172a;">{{ gh.name }} ({{ gh.culture }})</option>
             {% endfor %}
         {% else %}
-            <div class="gh-item">Aucune serre configurée...</div>
+            <option value="">Aucune serre</option>
         {% endif %}
-    </div>
+    </select>
 </div>
+{% if greenhouses|length > 0 %}
+<button id="btn-toggle-multi" onclick="toggleMultiMode()" style="background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+    <span style="font-size: 1.2rem; line-height: 1;">⊞</span> Mode TV
+</button>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
 
 {% if greenhouses %}
 <!-- Grille Bento du Tableau de Bord -->
@@ -26,10 +33,7 @@
     
     <!-- Colonne Gauche : Titre, Culture et Graphique -->
     <div class="bento-left">
-        <div class="hero">
-            <h2 id="gh-title" style="margin: 0 0 8px;">{{ selected_greenhouse.name if selected_greenhouse else 'Aucune serre configurée' }}</h2>
-            <p class="subtle" style="margin: 0;">Culture actuelle: <span id="gh-culture">{{ selected_greenhouse.culture if selected_greenhouse else '--' }}</span></p>
-        </div>
+
         <p id="sensor-status" class="subtle" style="margin-bottom: 24px;">En attente des données...</p>
 
         <!-- Carte pour afficher les moyennes de la serre -->
@@ -86,6 +90,10 @@
     </div>
 </div>
 
+    <!-- Vue Multi-Serres (Grille 2x2) -->
+    <div id="multi-dashboard-content" style="display: none; height: 80vh; min-height: 600px; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 24px;">
+        <!-- Les 4 quadrants seront générés dynamiquement par JavaScript -->
+    </div>
 <div id="loading-card" class="page-card">En attente des données...</div>
 {% else %}
 <div id="empty-card" class="page-card" style="text-align: center; padding: 60px 24px; max-width: 600px; margin: 40px auto; border-radius: 16px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);">

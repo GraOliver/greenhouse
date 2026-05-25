@@ -71,18 +71,17 @@ async function fetchGreenhouses() {
 // Crée les boutons cliquables pour chaque serre
 
 function renderGreenhouseBar() {
-    const greenhouseBar = document.getElementById('greenhouse-bar');
-    greenhouseBar.innerHTML = '';  // Vider le contenu précédent
-    greenhouses.forEach(gh => {    // Pour chaque serre disponible
-        const ghItem = document.createElement('div');
-        ghItem.className = `gh-item ${selectedId === gh.id ? 'selected' : ''}`;
-        ghItem.onclick = () => selectGreenhouse(gh.id);
-        ghItem.innerHTML = `
-            <span class="gh-name">${gh.name}</span>
-            <span class="gh-culture">${gh.culture}</span>
-        `;
-        greenhouseBar.appendChild(ghItem);
+    const select = document.getElementById('greenhouse-select');
+    if (!select) return;
+    select.innerHTML = '';  // Vider le contenu précédent
+    greenhouses.forEach(gh => {
+        const option = document.createElement('option');
+        option.value = gh.id;
+        option.style.color = '#0f172a';
+        option.textContent = `${gh.name} (${gh.culture || 'Inconnue'})`;
+        select.appendChild(option);
     });
+    select.value = selectedId || greenhouses[0].id;
 }
 
 // ============================================
@@ -93,14 +92,10 @@ function renderGreenhouseBar() {
 async function selectGreenhouse(id) {
     selectedId = id;  // Mettre à jour la serre sélectionnée
     
-    // Mettre à jour la classe CSS "selected" sur les boutons
-    document.querySelectorAll('.gh-item').forEach((item, index) => {
-        if (greenhouses[index].id === selectedId) {
-            item.classList.add('selected');
-        } else {
-            item.classList.remove('selected');
-        }
-    });
+    const select = document.getElementById('greenhouse-select');
+    if (select && select.value !== id) {
+        select.value = id;
+    }
 
     // Mettre à jour le titre et la culture affichés
     const currentGh = greenhouses.find(g => g.id === selectedId);
@@ -560,10 +555,13 @@ function initSSE() {
             if (topic.includes('/averages/')) {
                 const topicParts = topic.split('/');
                 const ghId = topicParts[2];
-                if (ghId === selectedId) {
+                if (ghId === selectedId && !isMultiMode) {
                     // Les moyennes sont déjà calculées côté serveur de manière cohérente
                     updateAveragesUI(msg);
                     console.log(`[SSE] Moyennes reçues pour ${ghId}:`, msg);
+                }
+                if (isMultiMode && multiModeGreenhouses.some(g => g.id === ghId)) {
+                    updateMultiQuadrantUI(ghId, msg);
                 }
                 return;
             }
@@ -580,4 +578,162 @@ function initSSE() {
         console.error("Erreur SSE:", err);
         // La connexion SSE se rétablira automatiquement après quelques secondes
     };
+}
+
+// ============================================
+// MODE MULTI-SERRES (Vue TV)
+// ============================================
+
+let isMultiMode = false;
+let multiModeGreenhouses = []; // max 4 greenhouses
+
+function toggleMultiMode() {
+    isMultiMode = !isMultiMode;
+    
+    const dashboardContent = document.getElementById('dashboard-content');
+    const multiContent = document.getElementById('multi-dashboard-content');
+    const btn = document.getElementById('btn-toggle-multi');
+    const ghSelect = document.getElementById('greenhouse-select');
+    
+    if (isMultiMode) {
+        // Passer en mode multi
+        dashboardContent.style.display = 'none';
+        if (ghSelect) {
+            ghSelect.disabled = true;
+            ghSelect.parentElement.style.opacity = '0.5';
+        }
+        
+        multiContent.style.display = 'grid';
+        btn.innerHTML = '<span style="font-size: 1.4rem; line-height: 1;">✕</span> Quitter Mode TV';
+        btn.style.backgroundColor = '#ef4444'; // Rouge pour quitter
+        
+        // Sélectionner jusqu'à 4 serres
+        multiModeGreenhouses = greenhouses.slice(0, 4);
+        renderMultiGrid();
+        
+        // Fetcher les calculs initiaux pour les 4 serres
+        multiModeGreenhouses.forEach(gh => {
+            fetchSensorCalculationsMulti(gh.id);
+        });
+        
+    } else {
+        // Revenir en mode normal
+        dashboardContent.style.display = 'grid';
+        if (ghSelect) {
+            ghSelect.disabled = false;
+            ghSelect.parentElement.style.opacity = '1';
+        }
+        
+        multiContent.style.display = 'none';
+        btn.innerHTML = '<span style="font-size: 1.4rem; line-height: 1;">⊞</span> Mode TV';
+        btn.style.backgroundColor = ''; // Revenir à la couleur par défaut
+        
+        // S'assurer que les données de la serre sélectionnée sont à jour
+        fetchSensorCalculations(selectedId);
+    }
+}
+
+function renderMultiGrid() {
+    const multiContent = document.getElementById('multi-dashboard-content');
+    multiContent.innerHTML = '';
+    
+    multiModeGreenhouses.forEach(gh => {
+        const quadrant = document.createElement('div');
+        quadrant.className = 'card';
+        quadrant.style.display = 'flex';
+        quadrant.style.flexDirection = 'column';
+        quadrant.style.border = '1px solid rgba(226, 232, 240, 0.8)';
+        
+        quadrant.innerHTML = `
+            <div style="margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
+                <h2 style="margin: 0; color: #0f172a; font-size: 1.8rem;">${gh.name}</h2>
+                <span class="subtle" style="font-size: 1rem;">${gh.culture || 'Culture inconnue'}</span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 16px; flex-grow: 1;">
+                <!-- TA -->
+                <div style="background: rgba(245, 158, 66, 0.08); border-left: 6px solid #f59e42; padding: 20px; border-radius: 12px; display: flex; flex-direction: column; justify-content: center;">
+                    <span style="font-size: 1rem; color: #7c2d12; font-weight: 600; margin-bottom: 8px;">Temp. Air</span>
+                    <strong style="font-size: 2.5rem; color: #0f172a; line-height: 1;"><span id="multi-avg-TA-${gh.id}">--</span><span style="font-size: 1.2rem; color: #64748b; margin-left: 4px;">°C</span></strong>
+                </div>
+                <!-- TS -->
+                <div style="background: rgba(234, 179, 8, 0.08); border-left: 6px solid #eab308; padding: 20px; border-radius: 12px; display: flex; flex-direction: column; justify-content: center;">
+                    <span style="font-size: 1rem; color: #713f12; font-weight: 600; margin-bottom: 8px;">Temp. Sol</span>
+                    <strong style="font-size: 2.5rem; color: #0f172a; line-height: 1;"><span id="multi-avg-TS-${gh.id}">--</span><span style="font-size: 1.2rem; color: #64748b; margin-left: 4px;">°C</span></strong>
+                </div>
+                <!-- HA -->
+                <div style="background: rgba(59, 130, 246, 0.08); border-left: 6px solid #3b82f6; padding: 20px; border-radius: 12px; display: flex; flex-direction: column; justify-content: center;">
+                    <span style="font-size: 1rem; color: #1e3a8a; font-weight: 600; margin-bottom: 8px;">Hum. Air</span>
+                    <strong style="font-size: 2.5rem; color: #0f172a; line-height: 1;"><span id="multi-avg-HA-${gh.id}">--</span><span style="font-size: 1.2rem; color: #64748b; margin-left: 4px;">%</span></strong>
+                </div>
+                <!-- HS -->
+                <div style="background: rgba(16, 185, 129, 0.08); border-left: 6px solid #10b981; padding: 20px; border-radius: 12px; display: flex; flex-direction: column; justify-content: center;">
+                    <span style="font-size: 1rem; color: #064e3b; font-weight: 600; margin-bottom: 8px;">Hum. Sol</span>
+                    <strong style="font-size: 2.5rem; color: #0f172a; line-height: 1;"><span id="multi-avg-HS-${gh.id}">--</span><span style="font-size: 1.2rem; color: #64748b; margin-left: 4px;">%</span></strong>
+                </div>
+            </div>
+        `;
+        multiContent.appendChild(quadrant);
+    });
+    
+    // Remplir les quadrants vides si moins de 4 serres
+    for (let i = multiModeGreenhouses.length; i < 4; i++) {
+        const quadrant = document.createElement('div');
+        quadrant.className = 'card';
+        quadrant.style.display = 'flex';
+        quadrant.style.alignItems = 'center';
+        quadrant.style.justifyContent = 'center';
+        quadrant.style.border = '1px dashed #cbd5e1';
+        quadrant.style.backgroundColor = '#f8fafc';
+        quadrant.innerHTML = `<span style="color: #94a3b8; font-size: 1.2rem;">Emplacement libre</span>`;
+        multiContent.appendChild(quadrant);
+    }
+}
+
+function updateMultiQuadrantUI(ghId, averages) {
+    if (!isMultiMode) return;
+    
+    const avgTA = document.getElementById(`multi-avg-TA-${ghId}`);
+    const avgTS = document.getElementById(`multi-avg-TS-${ghId}`);
+    const avgHA = document.getElementById(`multi-avg-HA-${ghId}`);
+    const avgHS = document.getElementById(`multi-avg-HS-${ghId}`);
+    
+    if (avgTA) avgTA.textContent = averages.TA !== undefined ? averages.TA : '--';
+    if (avgTS) avgTS.textContent = averages.TS !== undefined ? averages.TS : '--';
+    if (avgHA) avgHA.textContent = averages.HA !== undefined ? averages.HA : '--';
+    if (avgHS) avgHS.textContent = averages.HS !== undefined ? averages.HS : '--';
+}
+
+async function fetchSensorCalculationsMulti(ghId) {
+    try {
+        const response = await fetch(`/api/sensor-data/${ghId}`);
+        if (!response.ok) return;
+        const data = await response.json();
+        
+        if (data.computed && data.computed[ghId]) {
+            const ghData = data.computed[ghId];
+            let totalTA = 0, totalTS = 0, totalHA = 0, totalHS = 0, count = 0;
+            
+            Object.keys(ghData).forEach(compId => {
+                const comp = ghData[compId];
+                if (comp.ta !== null && comp.ta !== undefined) totalTA += comp.ta;
+                if (comp.ts !== null && comp.ts !== undefined) totalTS += comp.ts;
+                if (comp.ha !== null && comp.ha !== undefined) totalHA += comp.ha;
+                if (comp.hs !== null && comp.hs !== undefined) totalHS += comp.hs;
+                count++;
+            });
+            
+            if (count > 0) {
+                const averages = {
+                    TA: (totalTA / count).toFixed(1),
+                    TS: (totalTS / count).toFixed(1),
+                    HA: (totalHA / count).toFixed(1),
+                    HS: (totalHS / count).toFixed(1)
+                };
+                updateMultiQuadrantUI(ghId, averages);
+            }
+        }
+    } catch (err) {
+        console.warn(`Erreur récupération multi pour ${ghId}`, err);
+    }
 }
