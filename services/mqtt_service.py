@@ -13,8 +13,8 @@ from models.greenhouse import get_greenhouse
 from models.culture import get_culture
 
 # Configuration du broker MQTT
-MQTT_BROKER = '192.168.1.173' # Le IPV de la machine ici nous sommess en locale
-# MQTT_BROKER = 'localhost'
+# MQTT_BROKER = '192.168.1.173' # Le IPV de la machine ici nous sommess en locale
+MQTT_BROKER = 'localhost'
 MQTT_PORT = 1883
 client = mqtt.Client() # creation client
 

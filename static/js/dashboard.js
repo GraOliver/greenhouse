@@ -15,6 +15,7 @@ let history = [];                              // Historique des moyennes pour l
 let chartInstance = null;                      // Instance du graphique Chart.js
 let chartInterval = null;                      // Intervalle pour mettre à jour le graphique
 let sensorDataPollingInterval = null;          // Intervalle pour récupérer les données calculées toutes les 5s
+let multiModePollingInterval = null;           // Intervalle pour mettre à jour les 4 serres en mode TV
 
 // ============================================
 // INITIALISATION AU CHARGEMENT DE LA PAGE
@@ -616,6 +617,14 @@ function toggleMultiMode() {
             fetchSensorCalculationsMulti(gh.id);
         });
         
+        // Configurer la mise à jour périodique (toutes les 5 secondes)
+        if (multiModePollingInterval) clearInterval(multiModePollingInterval);
+        multiModePollingInterval = setInterval(() => {
+            multiModeGreenhouses.forEach(gh => {
+                fetchSensorCalculationsMulti(gh.id);
+            });
+        }, 5000);
+        
     } else {
         // Revenir en mode normal
         dashboardContent.style.display = 'grid';
@@ -627,6 +636,12 @@ function toggleMultiMode() {
         multiContent.style.display = 'none';
         btn.innerHTML = '<span style="font-size: 1.4rem; line-height: 1;">⊞</span> Mode TV';
         btn.style.backgroundColor = ''; // Revenir à la couleur par défaut
+        
+        // Arrêter la mise à jour périodique du mode TV
+        if (multiModePollingInterval) {
+            clearInterval(multiModePollingInterval);
+            multiModePollingInterval = null;
+        }
         
         // S'assurer que les données de la serre sélectionnée sont à jour
         fetchSensorCalculations(selectedId);
